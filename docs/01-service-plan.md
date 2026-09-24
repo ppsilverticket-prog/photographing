@@ -97,7 +97,7 @@
 
 | 영역 | 추천 | 이유 |
 |---|---|---|
-| 앱 | Flutter 또는 React Native | iOS와 안드로이드 동시 개발 |
+| 앱 | **Expo (React Native, TypeScript)로 결정** ([04-dev-approach.md](04-dev-approach.md) 6절) | iOS와 안드로이드 동시 개발, 맥 없이 빌드·배포 |
 | 백엔드 | Supabase (또는 Firebase) | 인증, DB, 실시간 기능, 스토리지 일체형 |
 | 채팅 | Supabase Realtime (규모가 커지면 Sendbird 등 전문 솔루션) | 모임 채팅 |
 | 지도 | 카카오맵 또는 네이버지도 API | 국내 장소 검색 품질 |
@@ -166,8 +166,9 @@
 |---|---|---|---|
 | 1 | "포토그래핑" 이름 확인 (앱스토어, KIPRIS 상표, 도메인·SNS 계정) | [02-name-check.md](02-name-check.md) | 1차 조사 완료, KIPRIS·앱스토어 직접 확인 필요 |
 | 2 | 출사 모임 경험자 인터뷰 질문지 작성 및 인터뷰 진행 | [03-interview-guide.md](03-interview-guide.md), [interviews/](interviews/README.md) | 질문지·모집 키트 완료, 9/28 모집 시작 |
-| 3 | 개발 방식(직접, 외주, 공동창업) 결정 | [04-dev-approach.md](04-dev-approach.md) | 비교표 완료, 결정 대기 |
+| 3 | 개발 방식(직접, 외주, 공동창업) 결정 | [04-dev-approach.md](04-dev-approach.md) | 직접 개발(Expo)로 시작 |
 | 4 | 핵심 화면 와이어프레임 작성 | [../wireframes/index.html](../wireframes/index.html) | v0.1 완료 (7개 화면) |
 | 5 | 경쟁 서비스 분석 (7절 1~2주차) | [05-competitor-analysis.md](05-competitor-analysis.md) | 1차 완료, 앱 직접 사용 확인 필요 |
 | 6 | 사전 신청자·창립 모임장 모집 (7절 병행 작업) | [06-prelaunch.md](06-prelaunch.md), [../landing/index.html](../landing/index.html) | 랜딩 완성, 이름·계정 확보 후 폼 연결·배포 |
 | 7 | 운영정책·약관 초안 (7절 3~5주차 선행) | [07-operations-policy.md](07-operations-policy.md) | 초안 v0.1, 8절 항목 전문가 확인 필요 |
+| 8 | iOS·Android 앱 프로토타입 | [../mobile/README.md](../mobile/README.md) | 13개 화면, 서버 연결 전. 웹 미리보기 있음 |

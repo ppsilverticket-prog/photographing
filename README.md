@@ -21,6 +21,7 @@ photographing/
 │       └── _template.md       ← 인터뷰 1명 기록 템플릿
 ├── landing/
 │   └── index.html             ← 사전 신청·창립 모임장 모집 랜딩 페이지 (정적 파일 1개)
+├── mobile/                    ← iOS·Android 앱 (Expo, React Native). 실행 방법은 mobile/README.md
 └── wireframes/
     └── index.html             ← MVP 핵심 화면 와이어프레임 v0.1 (브라우저로 열기)
 ```
@@ -40,10 +41,11 @@ photographing/
 |---|---|---|---|
 | 1 | 이름 확인 | 웹 조사 완료 | KIPRIS·앱스토어·도메인 직접 조회 후 `02-name-check.md` 표 채우기 (작업 환경에서 조회 사이트 접속이 막혀 직접 확인 필요) |
 | 2 | 인터뷰 | 질문지·모집 키트 완료 | 9/28(월) 첫 연락. 추석 연휴 동안 폼과 연락 목록 준비 ([`recruiting.md`](docs/interviews/recruiting.md) 1절) |
-| 3 | 개발 방식 | 비교표 완료 | 인터뷰 후 결정. `04-dev-approach.md` 6절에 기록 |
+| 3 | 개발 방식 | 직접 개발(Expo)로 결정 | `04-dev-approach.md` 6절에 기록. 인터뷰 결과에 따라 범위 조정 |
 | 4 | 와이어프레임 | v0.1 완료 | 인터뷰 컨셉 반응(질문 22~26)을 반영해 v0.2 |
 | 5 | 경쟁 서비스 분석 | 1차 완료 (웹 검색 기반) | 문토·소모임·당근 모임을 직접 설치해 [`05`](docs/05-competitor-analysis.md) 7절 확인. 5절 제안은 인터뷰 후 플랜에 반영 |
 | 6 | 사전 신청 랜딩 | 페이지 완성, 폼 연결 전 | 이름·계정 확보 후 구글 폼 2개 연결하고 배포 ([`06`](docs/06-prelaunch.md) 5절). 미리보기: https://claude.ai/artifact/CQRKwsSHKdi7Q2hbCC6n2B (비공개) |
 | 7 | 운영정책 | 초안 v0.1 (법률 자문 아님) | [`07`](docs/07-operations-policy.md) 1절 설계 결정 7개 확인, 8절 질문을 변호사 상담 때 가져가기. 약관·처리방침은 베타 전 검토 |
+| 8 | 앱 프로토타입 | 13개 화면 완성, 서버 연결 전 | 휴대폰에서 실행해 보기 ([`mobile/README.md`](mobile/README.md)). 웹 미리보기: https://claude.ai/artifact/TEMKut17TkMk4dGiJ2JwW9 (비공개). 다음은 Supabase 연결 |
 
 > ⚠️ 이 저장소는 공개(public)입니다. 인터뷰 기록에는 실명·연락처·모임 이름을 넣지 않습니다. 규칙은 [`docs/interviews/README.md`](docs/interviews/README.md) 1절에 있습니다.
