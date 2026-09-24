@@ -168,3 +168,4 @@
 | 2 | 출사 모임 경험자 인터뷰 질문지 작성 및 인터뷰 진행 | [03-interview-guide.md](03-interview-guide.md), [interviews/](interviews/README.md) | 질문지·모집 키트 완료, 9/28 모집 시작 |
 | 3 | 개발 방식(직접, 외주, 공동창업) 결정 | [04-dev-approach.md](04-dev-approach.md) | 비교표 완료, 결정 대기 |
 | 4 | 핵심 화면 와이어프레임 작성 | [../wireframes/index.html](../wireframes/index.html) | v0.1 완료 (7개 화면) |
+| 5 | 경쟁 서비스 분석 (7절 1~2주차) | [05-competitor-analysis.md](05-competitor-analysis.md) | 1차 완료, 앱 직접 사용 확인 필요 |

@@ -39,6 +39,8 @@
 
 원칙: **과거의 실제 행동**을 묻습니다. "~하면 쓰시겠어요?" 같은 미래 가정 질문은 마지막 컨셉 반응 단계까지 하지 않습니다.
 
+인터뷰이가 소모임·문토·밴드·프립 같은 서비스 이름을 먼저 꺼내면 [`05-competitor-analysis.md`](05-competitor-analysis.md) 6절의 보조 질문으로 파고듭니다.
+
 ### 3-1. 시작 (3분)
 
 - 녹음·익명 인용 동의 받기 (문구: [`interviews/recruiting.md`](interviews/recruiting.md) 4-2)
