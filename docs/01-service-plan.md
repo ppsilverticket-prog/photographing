@@ -135,8 +135,8 @@
 - 모임 중 문제 발생 시 긴급 신고 버튼
 - 인물 촬영 시 초상권 동의 안내, 도촬 금지 정책
 - 사진 도용 신고 절차(저작권)
-- 위치 기반 기능을 쓰면 위치기반서비스사업자 신고 필요 여부를 확인
-- 개인정보처리방침, 이용약관, 커뮤니티 가이드라인
+- 위치 기반 기능을 쓰면 위치기반서비스사업자 신고 필요 여부를 확인 → MVP는 기기 위치를 수집하지 않는 설계로 제안 ([07-operations-policy.md](07-operations-policy.md) 1절 D1)
+- 개인정보처리방침, 이용약관, 커뮤니티 가이드라인 → 초안과 법·스토어 체크리스트: [07-operations-policy.md](07-operations-policy.md)
 
 ## 10. 수익 모델 (MVP 이후)
 
@@ -170,3 +170,4 @@
 | 4 | 핵심 화면 와이어프레임 작성 | [../wireframes/index.html](../wireframes/index.html) | v0.1 완료 (7개 화면) |
 | 5 | 경쟁 서비스 분석 (7절 1~2주차) | [05-competitor-analysis.md](05-competitor-analysis.md) | 1차 완료, 앱 직접 사용 확인 필요 |
 | 6 | 사전 신청자·창립 모임장 모집 (7절 병행 작업) | [06-prelaunch.md](06-prelaunch.md), [../landing/index.html](../landing/index.html) | 랜딩 완성, 이름·계정 확보 후 폼 연결·배포 |
+| 7 | 운영정책·약관 초안 (7절 3~5주차 선행) | [07-operations-policy.md](07-operations-policy.md) | 초안 v0.1, 8절 항목 전문가 확인 필요 |

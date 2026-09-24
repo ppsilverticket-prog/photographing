@@ -14,6 +14,7 @@ photographing/
 │   ├── 04-dev-approach.md     ← 개발 방식(직접·외주·공동창업·하이브리드) 비교와 추천
 │   ├── 05-competitor-analysis.md ← 경쟁 서비스 분석 (소모임·문토·밴드·당근·프립 등)
 │   ├── 06-prelaunch.md        ← 사전 신청 폼, 창립 모임장 선정, 인스타 계획, 배포 순서
+│   ├── 07-operations-policy.md ← 운영정책 초안: 설계 결정, 법·스토어 체크리스트, 가이드라인, 신고 절차
 │   └── interviews/
 │       ├── README.md          ← 기록 규칙(가명 ID), 진행 현황, 모집 퍼널, 종합표
 │       ├── recruiting.md      ← 모집 일정, 채널별 연락 문구, 스크리닝 폼, 동의서, 예산
@@ -43,5 +44,6 @@ photographing/
 | 4 | 와이어프레임 | v0.1 완료 | 인터뷰 컨셉 반응(질문 22~26)을 반영해 v0.2 |
 | 5 | 경쟁 서비스 분석 | 1차 완료 (웹 검색 기반) | 문토·소모임·당근 모임을 직접 설치해 [`05`](docs/05-competitor-analysis.md) 7절 확인. 5절 제안은 인터뷰 후 플랜에 반영 |
 | 6 | 사전 신청 랜딩 | 페이지 완성, 폼 연결 전 | 이름·계정 확보 후 구글 폼 2개 연결하고 배포 ([`06`](docs/06-prelaunch.md) 5절). 미리보기: https://claude.ai/artifact/CQRKwsSHKdi7Q2hbCC6n2B (비공개) |
+| 7 | 운영정책 | 초안 v0.1 (법률 자문 아님) | [`07`](docs/07-operations-policy.md) 1절 설계 결정 7개 확인, 8절 질문을 변호사 상담 때 가져가기. 약관·처리방침은 베타 전 검토 |
 
 > ⚠️ 이 저장소는 공개(public)입니다. 인터뷰 기록에는 실명·연락처·모임 이름을 넣지 않습니다. 규칙은 [`docs/interviews/README.md`](docs/interviews/README.md) 1절에 있습니다.
