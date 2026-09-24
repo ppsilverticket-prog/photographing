@@ -8,6 +8,7 @@ import {
   Banner,
   Button,
   Card,
+  Chip,
   Divider,
   EmptyState,
   IconButton,
@@ -18,7 +19,7 @@ import {
   Tag,
   Txt,
 } from '../components/ui';
-import { ME, useMe, useStore } from '../data/store';
+import { useMe, useStore } from '../data/store';
 import { formatRange, formatShortDate } from '../domain/format';
 import { activityLabel, ageLabel, difficultyLabel, kindLabel } from '../domain/labels';
 import { isEligible, seatsLeft } from '../domain/meetupRules';
@@ -29,7 +30,7 @@ import { space, usePalette } from '../theme';
 
 export default function MeetupDetailScreen({ route, navigation }: RootScreenProps<'MeetupDetail'>) {
   const me = useMe();
-  const { state, actions } = useStore();
+  const { state, actions, mode } = useStore();
   const c = usePalette();
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -54,8 +55,8 @@ export default function MeetupDetailScreen({ route, navigation }: RootScreenProp
   const now = new Date();
   const start = new Date(meetup.startsAt);
   const end = new Date(meetup.endsAt);
-  const isHost = meetup.hostId === ME;
-  const joined = meetup.participantIds.includes(ME);
+  const isHost = meetup.hostId === me.id;
+  const joined = meetup.participantIds.includes(me.id);
   const pending = state.pending.includes(meetup.id);
   const left = seatsLeft(meetup);
   const eligible = isEligible(meetup, me);
@@ -130,7 +131,9 @@ export default function MeetupDetailScreen({ route, navigation }: RootScreenProp
             <Button label="모임장 승인 대기 중" disabled onPress={() => {}} style={{ flex: 1 }} />
             <Button label="신청 취소" variant="secondary" onPress={() => actions.cancel(meetup.id)} />
           </Row>
-          <Button label="프로토타입: 승인된 것으로 보기" variant="ghost" onPress={() => actions.approvePending(meetup.id)} />
+          {mode === 'local' ? (
+            <Button label="프로토타입: 승인된 것으로 보기" variant="ghost" onPress={() => actions.approvePending(meetup.id)} />
+          ) : null}
         </View>
       );
     }
@@ -222,7 +225,7 @@ export default function MeetupDetailScreen({ route, navigation }: RootScreenProp
                 {host.foundingHost ? <Tag label="창립 모임장" /> : null}
               </Row>
               <Txt variant="caption" tone="muted">
-                {activityLabel[host.type]} · {ageLabel[host.age]}
+                {[activityLabel[host.type], host.age ? ageLabel[host.age] : null].filter(Boolean).join(' · ')}
               </Txt>
             </View>
           </Row>
@@ -243,6 +246,8 @@ export default function MeetupDetailScreen({ route, navigation }: RootScreenProp
           </Row>
         </Card>
       ) : null}
+
+      {isHost && mode === 'server' ? <HostPanel meetupId={meetup.id} started={start <= now} /> : null}
 
       <Section title="모임 소개">
         <Txt>{meetup.description}</Txt>
@@ -279,5 +284,91 @@ export default function MeetupDetailScreen({ route, navigation }: RootScreenProp
         </View>
       </Section>
     </Screen>
+  );
+}
+
+/** 모임장 관리: 참여 신청 승인·거절, 모임이 시작한 뒤 출석 체크 (서버 모드) */
+function HostPanel({ meetupId, started }: { meetupId: string; started: boolean }) {
+  const { state, actions } = useStore();
+  const rows = state.participations.filter((p) => p.meetupId === meetupId && p.role === 'member');
+  const requests = rows.filter((p) => p.status === 'pending');
+  const confirmed = rows.filter((p) => p.status === 'confirmed');
+  const name = (id: string) => state.members[id]?.name ?? '알 수 없음';
+  const typeOf = (id: string) => {
+    const m = state.members[id];
+    return m ? activityLabel[m.type] : '';
+  };
+
+  return (
+    <Section title="모임장 관리">
+      <View style={{ gap: space.sm }}>
+        <Txt variant="smallStrong">승인을 기다리는 신청 {requests.length}</Txt>
+        {requests.length === 0 ? (
+          <Txt variant="small" tone="muted">
+            새 신청이 없어요.
+          </Txt>
+        ) : (
+          requests.map((p) => (
+            <Card key={p.userId} style={{ paddingVertical: space.md }}>
+              <Row style={{ justifyContent: 'space-between' }}>
+                <Row style={{ flexShrink: 1 }}>
+                  <Avatar name={name(p.userId)} size={32} />
+                  <View style={{ flexShrink: 1 }}>
+                    <Txt variant="bodyStrong">{name(p.userId)}</Txt>
+                    <Txt variant="caption" tone="muted">
+                      {typeOf(p.userId)}
+                    </Txt>
+                  </View>
+                </Row>
+                <Row>
+                  <Button
+                    label="거절"
+                    variant="secondary"
+                    onPress={() => actions.decide(meetupId, p.userId, false)}
+                    style={{ minHeight: 38, paddingHorizontal: 14 }}
+                  />
+                  <Button
+                    label="승인"
+                    onPress={() => actions.decide(meetupId, p.userId, true)}
+                    style={{ minHeight: 38, paddingHorizontal: 14 }}
+                  />
+                </Row>
+              </Row>
+            </Card>
+          ))
+        )}
+      </View>
+
+      <View style={{ gap: space.sm }}>
+        <Txt variant="smallStrong">출석 체크</Txt>
+        {!started ? (
+          <Txt variant="small" tone="muted">
+            모임이 시작하면 여기서 참석과 노쇼를 체크해요. 끝나고 7일까지 바꿀 수 있어요.
+          </Txt>
+        ) : confirmed.length === 0 ? (
+          <Txt variant="small" tone="muted">
+            확정된 참여자가 없어요.
+          </Txt>
+        ) : (
+          confirmed.map((p) => (
+            <Row key={p.userId} style={{ justifyContent: 'space-between' }}>
+              <Txt variant="body">{name(p.userId)}</Txt>
+              <Row>
+                <Chip
+                  label="참석"
+                  selected={p.attendance === 'attended'}
+                  onPress={() => actions.markAttendance(meetupId, p.userId, true)}
+                />
+                <Chip
+                  label="노쇼"
+                  selected={p.attendance === 'no_show'}
+                  onPress={() => actions.markAttendance(meetupId, p.userId, false)}
+                />
+              </Row>
+            </Row>
+          ))
+        )}
+      </View>
+    </Section>
   );
 }

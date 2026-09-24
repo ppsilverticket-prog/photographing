@@ -2,7 +2,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { DarkTheme, DefaultTheme, NavigationContainer, type Theme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useColorScheme } from 'react-native';
+import { ActivityIndicator, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useStore } from '../data/store';
@@ -90,7 +90,17 @@ function useNavigationTheme(): Theme {
 export default function RootNavigator() {
   const { state } = useStore();
   const theme = useNavigationTheme();
+  const c = usePalette();
   const signedIn = state.me !== null;
+
+  // 서버 모드: 저장된 로그인을 확인하고 데이터를 불러오는 동안
+  if (state.loading) {
+    return (
+      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: c.bg }}>
+        <ActivityIndicator color={c.accent} accessibilityLabel="불러오는 중" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer theme={theme}>

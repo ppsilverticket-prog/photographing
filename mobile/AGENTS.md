@@ -16,11 +16,13 @@ npx expo install <package>  # ALWAYS use instead of npm add — resolves SDK-com
 npx expo start              # start the dev server (scan the QR code with Expo Go)
 npm run lint                # expo lint
 npm run typecheck           # tsc --noEmit
-npm test                    # jest (domain rules + store reducer)
+npm test                    # jest (domain rules, store reducer, app↔DB contract tests)
 npx expo export --platform web --output-dir dist-web   # static web build for previews
 ```
 
 In the Claude Code cloud environment, api.expo.dev is blocked by the network policy. Prefix `expo install` and `expo export` with `EXPO_OFFLINE=1` there.
+
+`EXPO_PUBLIC_*` values are inlined at build time and Metro caches the result: after changing `.env.local` (or env vars for an export), run with `--clear`.
 
 Run lint, typecheck, and tests before declaring any task done.
 
@@ -28,7 +30,11 @@ Run lint, typecheck, and tests before declaring any task done.
 
 - `App.tsx` — fonts and providers. Import each font weight by path (`@expo-google-fonts/ibm-plex-sans-kr/700Bold`); the package index pulls in every weight (~2.8MB each).
 - `src/domain/` — pure rules with tests: no-show limits, meetup validation, EXIF summary, date formatting. No React imports here.
-- `src/data/` — `mock.ts` seed data and `store.tsx` (React context + reducer). The reducer is the seam where Supabase calls will replace in-memory updates.
+- `src/data/` — two interchangeable stores behind one `Store` interface (`storeTypes.ts`):
+  - **server mode** (`server/serverStore.tsx`) when `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_KEY` are set (`src/lib/supabase.ts`). Business rules live in the DB (`../supabase/migrations`); the app calls the RPCs and inserts listed in `server/mapping.ts`.
+  - **local mode** (`store.tsx` reducer + `mock.ts`) when they are not — used for interview demos and the web preview.
+  - `server/__tests__/mapping.test.ts` reads the SQL migrations and fails if the app inserts a column the DB doesn't grant, calls an RPC with different parameter names, or selects a column that doesn't exist. Keep select strings, RPC calls and insert payloads in `mapping.ts` so these tests cover them.
+- Use `useMyId()` (not a hardcoded id) to compare against the current user. Screens branch on `mode` only for things that differ by design (age band is set by identity verification in server mode; prototype tools only exist in local mode).
 - `src/navigation/` — React Navigation native stack + bottom tabs.
 - `src/screens/`, `src/components/` — UI. Colors and fonts come from `src/theme.ts`; don't hardcode colors in screens.
 

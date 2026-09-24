@@ -1,5 +1,5 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,19 +13,24 @@ import { radius, space, usePalette } from '../theme';
 const STEPS = 3;
 
 export default function OnboardingScreen({ navigation }: RootScreenProps<'Onboarding'>) {
-  const { actions } = useStore();
+  const { actions, mode, state } = useStore();
+  const server = mode === 'server';
   const insets = useSafeAreaInsets();
   const c = usePalette();
 
-  const [step, setStep] = useState(1);
+  const [stepChoice, setStep] = useState(1);
+  // 서버 모드에서 로그인은 했지만 프로필이 없으면 2단계부터
+  const step = server && state.authUserId && stepChoice === 1 ? 2 : stepChoice;
   const [name, setName] = useState('');
   const [type, setType] = useState<ActivityType | null>(null);
   const [age, setAge] = useState<AgeBand | null>(null);
   const [picked, setPicked] = useState<Genre[]>([]);
   const [district, setDistrict] = useState('성동구');
   const [agreed, setAgreed] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const profileReady = name.trim().length >= 2 && type !== null && age !== null;
+  // 서버 모드는 연령대를 본인인증 결과로 정하므로 묻지 않는다
+  const profileReady = name.trim().length >= 2 && type !== null && (server || age !== null);
 
   const progress = (
     <View style={{ flexDirection: 'row', gap: 6 }} accessibilityLabel={`${STEPS}단계 중 ${step}단계`}>
@@ -34,6 +39,10 @@ export default function OnboardingScreen({ navigation }: RootScreenProps<'Onboar
       ))}
     </View>
   );
+
+  if (step === 1 && server) {
+    return <SignIn progress={progress} />;
+  }
 
   if (step === 1) {
     return (
@@ -68,12 +77,17 @@ export default function OnboardingScreen({ navigation }: RootScreenProps<'Onboar
             label="다음"
             disabled={!profileReady}
             onPress={() => setStep(3)}
-            accessibilityHint="이름, 활동 유형, 연령대를 고르면 다음으로 넘어가요"
+            accessibilityHint={server ? '이름과 활동 유형을 고르면 다음으로 넘어가요' : '이름, 활동 유형, 연령대를 고르면 다음으로 넘어가요'}
           />
         }
       >
         <Row style={{ justifyContent: 'space-between' }}>
-          <Pressable accessibilityRole="button" accessibilityLabel="뒤로" onPress={() => setStep(1)} hitSlop={10}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={server ? '다른 계정으로 로그인' : '뒤로'}
+            onPress={() => (server ? actions.signOut() : setStep(1))}
+            hitSlop={10}
+          >
             <Ionicons name="chevron-back" size={24} color={c.ink} />
           </Pressable>
           <Txt variant="small" tone="muted">
@@ -118,13 +132,19 @@ export default function OnboardingScreen({ navigation }: RootScreenProps<'Onboar
           })}
         </View>
 
-        <Field label="연령대">
-          <Wrap>
-            {ageBands.map((a) => (
-              <Chip key={a.value} label={a.label} selected={age === a.value} onPress={() => setAge(a.value)} />
-            ))}
-          </Wrap>
-        </Field>
+        {server ? (
+          <Banner tone="info" icon="shield-checkmark-outline">
+            연령대는 휴대폰 본인인증 결과로 자동으로 정해져요. 모임의 대상 연령대를 속일 수 없게 하려는 거예요.
+          </Banner>
+        ) : (
+          <Field label="연령대">
+            <Wrap>
+              {ageBands.map((a) => (
+                <Chip key={a.value} label={a.label} selected={age === a.value} onPress={() => setAge(a.value)} />
+              ))}
+            </Wrap>
+          </Field>
+        )}
 
         <Field label="관심 장르" hint="여러 개 골라도 돼요">
           <Wrap>
@@ -158,10 +178,15 @@ export default function OnboardingScreen({ navigation }: RootScreenProps<'Onboar
       footer={
         <Button
           label="포토그래핑 시작하기"
-          disabled={!agreed || !type || !age}
-          onPress={() =>
-            type && age && actions.onboard({ name: name.trim(), type, age, genres: picked, district })
-          }
+          disabled={!agreed || !profileReady}
+          loading={saving}
+          onPress={async () => {
+            if (!type) return;
+            setSaving(true);
+            const ok = await actions.onboard({ name: name.trim(), type, age: server ? null : age, genres: picked, district });
+            // 성공하면 화면이 홈으로 바뀐다. 실패하면 안내가 뜨고 이 화면에 남는다
+            if (!ok) setSaving(false);
+          }}
         />
       }
     >
@@ -216,3 +241,76 @@ const styles = StyleSheet.create({
   },
   radio: { width: 22, height: 22, borderRadius: 11 },
 });
+
+/** 서버 모드 1단계: 이메일 로그인·가입. 카카오·Apple 로그인은 개발자 계정 준비 후 붙인다 */
+function SignIn({ progress }: { progress: ReactNode }) {
+  const { actions } = useStore();
+  const insets = useSafeAreaInsets();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [busy, setBusy] = useState<'in' | 'up' | null>(null);
+  const [notice, setNotice] = useState<{ tone: 'danger' | 'info'; text: string } | null>(null);
+
+  const valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) && password.length >= 6;
+
+  const submit = async (kind: 'in' | 'up') => {
+    setBusy(kind);
+    setNotice(null);
+    const result = kind === 'in' ? await actions.signIn(email, password) : await actions.signUp(email, password);
+    setBusy(null);
+    if (result.error) setNotice({ tone: 'danger', text: result.error });
+    else if (result.info) setNotice({ tone: 'info', text: result.info });
+  };
+
+  return (
+    <Screen contentStyle={{ paddingTop: insets.top + space.xxl, flexGrow: 1 }}>
+      {progress}
+      <View style={{ gap: space.md }}>
+        <Txt variant="title" style={{ fontSize: 28, lineHeight: 36 }}>
+          이번 주말,{'\n'}같이 찍으러 갈 사람
+        </Txt>
+        <Txt tone="muted">출사 모임을 찾고, 직접 열고, 찍은 사진에 구체적인 피드백을 주고받아요.</Txt>
+      </View>
+      <View style={{ gap: space.md }}>
+        <Field label="이메일">
+          <Input
+            value={email}
+            onChangeText={setEmail}
+            placeholder="name@example.com"
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            textContentType="emailAddress"
+          />
+        </Field>
+        <Field label="비밀번호" hint="6자 이상">
+          <Input
+            value={password}
+            onChangeText={setPassword}
+            placeholder="비밀번호"
+            secureTextEntry
+            autoCapitalize="none"
+            autoComplete="password"
+            textContentType="password"
+          />
+        </Field>
+        {notice ? (
+          <Banner tone={notice.tone} icon={notice.tone === 'danger' ? 'alert-circle-outline' : 'mail-outline'}>
+            {notice.text}
+          </Banner>
+        ) : null}
+        <Button label="로그인" onPress={() => submit('in')} disabled={!valid || busy !== null} loading={busy === 'in'} />
+        <Button
+          label="처음이에요, 가입하기"
+          variant="secondary"
+          onPress={() => submit('up')}
+          disabled={!valid || busy !== null}
+          loading={busy === 'up'}
+        />
+      </View>
+      <Banner tone="info" icon="shield-checkmark-outline">
+        개발 중에는 이메일로 로그인해요. 카카오·Apple 로그인과 휴대폰 본인인증은 출시 전에 붙여요.
+      </Banner>
+    </Screen>
+  );
+}

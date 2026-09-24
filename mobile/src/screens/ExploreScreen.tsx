@@ -6,8 +6,8 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { MeetupCard } from '../components/cards';
-import { Chip, EmptyState, Row, Txt } from '../components/ui';
-import { ME, useMe, useStore, useVisible } from '../data/store';
+import { Chip, EmptyState, Row, Txt, useRefresh } from '../components/ui';
+import { useMe, useStore, useVisible } from '../data/store';
 import { isThisWeekend } from '../domain/format';
 import { isEligible } from '../domain/meetupRules';
 import type { Meetup } from '../domain/types';
@@ -23,7 +23,8 @@ type FilterKey = 'weekend' | 'district' | 'welcome' | 'free' | 'instant' | 'elig
 
 export default function ExploreScreen({ navigation }: Props) {
   const me = useMe();
-  const { state } = useStore();
+  const { state, mode, actions } = useStore();
+  const refresh = useRefresh(mode === 'server' ? actions.refresh : undefined);
   const { meetups } = useVisible();
   const c = usePalette();
   const [filters, setFilters] = useState<FilterKey[]>([]);
@@ -62,7 +63,7 @@ export default function ExploreScreen({ navigation }: Props) {
 
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 110 }} refreshControl={refresh}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -115,7 +116,7 @@ export default function ExploreScreen({ navigation }: Props) {
                 meetup={m}
                 host={state.members[m.hostId]}
                 status={
-                  m.participantIds.includes(ME) ? 'joined' : state.pending.includes(m.id) ? 'pending' : undefined
+                  m.participantIds.includes(me.id) ? 'joined' : state.pending.includes(m.id) ? 'pending' : undefined
                 }
                 onPress={() => navigation.navigate('MeetupDetail', { id: m.id })}
               />

@@ -58,6 +58,7 @@ export default function CreateMeetupScreen({ navigation }: RootScreenProps<'Crea
   const [approval, setApproval] = useState(true);
   const [description, setDescription] = useState('');
   const [errors, setErrors] = useState<DraftErrors>({});
+  const [sending, setSending] = useState(false);
 
   const at = (min: number) => {
     const d = days[dayIndex];
@@ -81,13 +82,15 @@ export default function CreateMeetupScreen({ navigation }: RootScreenProps<'Crea
     description,
   });
 
-  const submit = () => {
+  const submit = async () => {
     const d = draft();
     const found = validateMeetupDraft(d, new Date());
     setErrors(found);
     if (Object.keys(found).length > 0) return;
-    const id = actions.createMeetup(d);
-    navigation.replace('MeetupDetail', { id });
+    setSending(true);
+    const id = await actions.createMeetup(d);
+    setSending(false);
+    if (id) navigation.replace('MeetupDetail', { id });
   };
 
   const errorCount = Object.keys(errors).length;
@@ -104,7 +107,7 @@ export default function CreateMeetupScreen({ navigation }: RootScreenProps<'Crea
           <Txt variant="caption" tone="muted" style={{ textAlign: 'center' }}>
             모임을 열면 커뮤니티 가이드라인과 안전 규칙(초상권 동의, 노쇼 기준)에 동의한 것으로 봐요.
           </Txt>
-          <Button label="모임 열기" onPress={submit} disabled={!eligibility.ok} />
+          <Button label="모임 열기" onPress={submit} disabled={!eligibility.ok} loading={sending} />
         </View>
       }
     >

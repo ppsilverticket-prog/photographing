@@ -6,7 +6,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 
 import { MeetupCard, PostCard } from '../components/cards';
 import { Avatar, Banner, Card, Divider, EmptyState, IconButton, Row, Screen, StatBox, Tag, Txt } from '../components/ui';
-import { ME, useMe, useStore } from '../data/store';
+import { useMe, useStore } from '../data/store';
 import { formatShortDate } from '../domain/format';
 import { activityLabel, ageLabel } from '../domain/labels';
 import { participationRestriction } from '../domain/noShow';
@@ -17,7 +17,7 @@ type Props = CompositeScreenProps<BottomTabScreenProps<TabParamList, 'My'>, Nati
 
 export default function MyScreen({ navigation }: Props) {
   const me = useMe();
-  const { state } = useStore();
+  const { state, mode, actions } = useStore();
   const c = usePalette();
   const [tab, setTab] = useState<'meetups' | 'posts'>('meetups');
   const now = new Date();
@@ -30,12 +30,12 @@ export default function MyScreen({ navigation }: Props) {
 
   const restriction = participationRestriction(me.noShowDates.map((d) => new Date(d)), now);
   const myMeetups = state.meetups
-    .filter((m) => m.participantIds.includes(ME) || state.pending.includes(m.id))
+    .filter((m) => m.participantIds.includes(me.id) || state.pending.includes(m.id))
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
-  const myPosts = state.posts.filter((p) => p.authorId === ME);
+  const myPosts = state.posts.filter((p) => p.authorId === me.id);
 
   return (
-    <Screen>
+    <Screen onRefresh={mode === 'server' ? actions.refresh : undefined}>
       <View style={{ gap: space.md }}>
         <Row style={{ gap: space.lg }}>
           <Avatar name={me.name} size={64} />
@@ -45,10 +45,10 @@ export default function MyScreen({ navigation }: Props) {
               {me.foundingHost ? <Tag label="창립 모임장" /> : null}
             </Row>
             <Txt variant="small" tone="muted">
-              {activityLabel[me.type]} · {ageLabel[me.age]} · 서울 {me.district}
+              {[activityLabel[me.type], me.age ? ageLabel[me.age] : null, `서울 ${me.district}`].filter(Boolean).join(' · ')}
             </Txt>
             <Row style={{ gap: 4 }}>
-              <Tag label="본인인증 완료" tone="neutral" />
+              <Tag label={me.verified ? '본인인증 완료' : '본인인증 전'} tone={me.verified ? 'neutral' : 'warn'} />
             </Row>
           </View>
         </Row>
@@ -120,7 +120,7 @@ export default function MyScreen({ navigation }: Props) {
                 key={m.id}
                 meetup={m}
                 host={state.members[m.hostId]}
-                status={m.participantIds.includes(ME) ? 'joined' : 'pending'}
+                status={m.participantIds.includes(me.id) ? 'joined' : 'pending'}
                 onPress={() => navigation.navigate('MeetupDetail', { id: m.id })}
               />
             ))

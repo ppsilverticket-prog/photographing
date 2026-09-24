@@ -1,6 +1,6 @@
 // 프로토타입용 예시 데이터. 실제 서버(Supabase)를 연결하면 이 파일은 개발용 시드로만 쓴다.
 // 모임 날짜는 앱을 연 날을 기준으로 만들어서 언제 열어도 "다가오는 모임"으로 보인다.
-import type { ChatMessage, Meetup, Member, Post } from '../domain/types';
+import type { AgeBand, ChatMessage, Meetup, Member, Post } from '../domain/types';
 
 function dayAt(base: Date, addDays: number, hour: number, minute = 0): Date {
   return new Date(base.getFullYear(), base.getMonth(), base.getDate() + addDays, hour, minute);
@@ -348,7 +348,7 @@ export interface Guide {
 }
 
 /** 홈의 연령대별 추천 정보 (플랜 3절 ③) */
-export const guidesByAge: Record<Member['age'], Guide[]> = {
+export const guidesByAge: Record<AgeBand, Guide[]> = {
   '20s': [
     { title: '폰카로 스냅 느낌 내는 세 가지 설정', tag: '가이드 · 폰카' },
     { title: '첫 미러리스, 중고로 살 때 확인할 것', tag: '장비 · 입문자 라운지 인기글' },

@@ -1,8 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import type { ComponentProps, ReactNode } from 'react';
+import { type ComponentProps, type ReactNode, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   type StyleProp,
   StyleSheet,
@@ -160,22 +161,45 @@ export function Screen({
   children,
   contentStyle,
   footer,
+  onRefresh,
 }: {
   children: ReactNode;
   contentStyle?: StyleProp<ViewStyle>;
   footer?: ReactNode;
+  /** 있으면 당겨서 새로고침 */
+  onRefresh?: () => Promise<void>;
 }) {
   const c = usePalette();
+  const refresh = useRefresh(onRefresh);
   return (
     <View style={{ flex: 1, backgroundColor: c.bg }}>
       <ScrollView
         contentContainerStyle={[styles.screen, contentStyle]}
         keyboardShouldPersistTaps="handled"
+        refreshControl={refresh}
       >
         {children}
       </ScrollView>
       {footer ? <View style={[styles.footer, { borderTopColor: c.line, backgroundColor: c.bg }]}>{footer}</View> : null}
     </View>
+  );
+}
+
+/** 당겨서 새로고침. onRefresh가 없으면 undefined */
+export function useRefresh(onRefresh?: () => Promise<void>) {
+  const c = usePalette();
+  const [refreshing, setRefreshing] = useState(false);
+  if (!onRefresh) return undefined;
+  return (
+    <RefreshControl
+      refreshing={refreshing}
+      tintColor={c.accent}
+      colors={[c.accent]}
+      onRefresh={() => {
+        setRefreshing(true);
+        void onRefresh().finally(() => setRefreshing(false));
+      }}
+    />
   );
 }
 

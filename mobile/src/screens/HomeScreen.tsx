@@ -4,9 +4,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { View } from 'react-native';
 
 import { MeetupCard, PostCard } from '../components/cards';
-import { Card, Row, Screen, Section, Tag, Txt } from '../components/ui';
+import { Banner, Card, Row, Screen, Section, Tag, Txt } from '../components/ui';
 import { guidesByAge } from '../data/mock';
-import { ME, useMe, useStore, useVisible } from '../data/store';
+import { useMe, useStore, useVisible } from '../data/store';
 import { activityLabel, ageLabel } from '../domain/labels';
 import { isEligible, seatsLeft } from '../domain/meetupRules';
 import type { Meetup } from '../domain/types';
@@ -20,7 +20,7 @@ type Props = CompositeScreenProps<
 
 export default function HomeScreen({ navigation }: Props) {
   const me = useMe();
-  const { state } = useStore();
+  const { state, mode, actions } = useStore();
   const visible = useVisible();
   const now = new Date();
 
@@ -33,23 +33,28 @@ export default function HomeScreen({ navigation }: Props) {
     .slice(0, 3);
 
   const waiting = visible.posts
-    .filter((p) => p.board === 'feedback' && p.answers.length === 0 && p.authorId !== ME)
+    .filter((p) => p.board === 'feedback' && p.answers.length === 0 && p.authorId !== me.id)
     .slice(0, 2);
 
   const statusOf = (id: string) =>
-    state.meetups.find((m) => m.id === id)?.participantIds.includes(ME)
+    state.meetups.find((m) => m.id === id)?.participantIds.includes(me.id)
       ? ('joined' as const)
       : state.pending.includes(id)
         ? ('pending' as const)
         : undefined;
 
   return (
-    <Screen>
+    <Screen onRefresh={mode === 'server' ? actions.refresh : undefined}>
+      {!me.verified ? (
+        <Banner tone="warn" icon="shield-outline">
+          본인인증 전이에요. 인증을 마치면 모임에 참여하고, 모임을 열고, 글을 쓸 수 있어요.
+        </Banner>
+      ) : null}
       <Card style={{ paddingVertical: space.md }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <View style={{ flex: 1 }}>
             <Txt variant="bodyStrong">
-              {activityLabel[me.type]} · {ageLabel[me.age]} · 서울 {me.district}
+              {[activityLabel[me.type], me.age ? ageLabel[me.age] : null, `서울 ${me.district}`].filter(Boolean).join(' · ')}
             </Txt>
             <Txt variant="caption" tone="muted">
               기준으로 추천해요
@@ -77,14 +82,16 @@ export default function HomeScreen({ navigation }: Props) {
         )}
       </Section>
 
-      <Section title={`${ageLabel[me.age]} ${activityLabel[me.type]}를 위한 정보`}>
-        {guidesByAge[me.age].map((g) => (
-          <Card key={g.title} style={{ gap: 6 }}>
-            <Tag label={g.tag} tone="neutral" />
-            <Txt variant="bodyStrong">{g.title}</Txt>
-          </Card>
-        ))}
-      </Section>
+      {me.age ? (
+        <Section title={`${ageLabel[me.age]} ${activityLabel[me.type]}를 위한 정보`}>
+          {guidesByAge[me.age].map((g) => (
+            <Card key={g.title} style={{ gap: 6 }}>
+              <Tag label={g.tag} tone="neutral" />
+              <Txt variant="bodyStrong">{g.title}</Txt>
+            </Card>
+          ))}
+        </Section>
+      ) : null}
 
       <Section title="피드백을 기다리는 사진" action="더 보기" onAction={() => navigation.navigate('Community')}>
         {waiting.map((p) => (

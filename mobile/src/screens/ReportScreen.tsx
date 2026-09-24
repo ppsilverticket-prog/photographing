@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Banner, Button, Card, Checkbox, Field, Input, Screen, Txt } from '../components/ui';
-import { ME, useStore } from '../data/store';
+import { useMyId, useStore } from '../data/store';
 import { reportReasons } from '../domain/labels';
 import type { ReportReason } from '../domain/types';
 import type { RootScreenProps } from '../navigation/types';
@@ -11,7 +11,9 @@ import { radius, space, usePalette } from '../theme';
 
 export default function ReportScreen({ route, navigation }: RootScreenProps<'Report'>) {
   const { kind, id } = route.params;
-  const { state, actions } = useStore();
+  const { state, actions, mode } = useStore();
+  const myId = useMyId();
+  const [sending, setSending] = useState(false);
   const c = usePalette();
   const [reason, setReason] = useState<ReportReason | null>(route.params.reason ?? null);
   const [detail, setDetail] = useState('');
@@ -21,7 +23,7 @@ export default function ReportScreen({ route, navigation }: RootScreenProps<'Rep
   const meetup = kind === 'meetup' ? state.meetups.find((m) => m.id === id) : undefined;
   const post = kind === 'post' ? state.posts.find((p) => p.id === id) : undefined;
   const personId = kind === 'member' ? id : (meetup?.hostId ?? post?.authorId);
-  const person = personId && personId !== ME ? state.members[personId] : undefined;
+  const person = personId && personId !== myId ? state.members[personId] : undefined;
   const targetText = meetup ? `모임: ${meetup.title}` : post ? `글: ${post.title}` : person ? `사용자: ${person.name}` : '';
 
   if (done) {
@@ -46,23 +48,28 @@ export default function ReportScreen({ route, navigation }: RootScreenProps<'Rep
             </Txt>
           </Card>
         ) : null}
-        <Banner tone="warn" icon="construct-outline">
-          프로토타입이라 신고는 이 기기에만 저장되고 운영팀에 전달되지 않아요.
-        </Banner>
+        {mode === 'local' ? (
+          <Banner tone="warn" icon="construct-outline">
+            프로토타입이라 신고는 이 기기에만 저장되고 운영팀에 전달되지 않아요.
+          </Banner>
+        ) : null}
         <Button label="닫기" onPress={() => navigation.goBack()} />
       </Screen>
     );
   }
 
-  const submit = () => {
+  const submit = async () => {
     if (!reason) return;
-    actions.report(kind, id, reason, detail.trim());
+    setSending(true);
+    const ok = await actions.report(kind, id, reason, detail.trim());
+    setSending(false);
+    if (!ok) return;
     if (alsoBlock && person) actions.block(person.id);
     setDone(true);
   };
 
   return (
-    <Screen footer={<Button label="신고하기" variant="danger" onPress={submit} disabled={!reason} />}>
+    <Screen footer={<Button label="신고하기" variant="danger" onPress={submit} disabled={!reason} loading={sending} />}>
       <Txt variant="small" tone="muted">
         {targetText}
       </Txt>

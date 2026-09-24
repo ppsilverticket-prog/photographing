@@ -23,7 +23,7 @@ import { space } from '../theme';
 
 export default function SettingsScreen({ navigation }: RootScreenProps<'Settings'>) {
   const me = useMe();
-  const { state, actions } = useStore();
+  const { state, actions, mode } = useStore();
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const blocked = state.blocked.map((id) => state.members[id]).filter(Boolean);
@@ -41,13 +41,19 @@ export default function SettingsScreen({ navigation }: RootScreenProps<'Settings
             ))}
           </Wrap>
         </Field>
-        <Field label="연령대">
-          <Wrap>
-            {ageBands.map((a) => (
-              <Chip key={a.value} label={a.label} selected={me.age === a.value} onPress={() => actions.updateProfile({ age: a.value })} />
-            ))}
-          </Wrap>
-        </Field>
+        {mode === 'server' ? (
+          <Field label="연령대" hint="본인인증 결과로 정해져요">
+            <Txt>{me.age ? ageBands.find((a) => a.value === me.age)?.label : '본인인증 전'}</Txt>
+          </Field>
+        ) : (
+          <Field label="연령대">
+            <Wrap>
+              {ageBands.map((a) => (
+                <Chip key={a.value} label={a.label} selected={me.age === a.value} onPress={() => actions.updateProfile({ age: a.value })} />
+              ))}
+            </Wrap>
+          </Field>
+        )}
         <Field label="주 활동 지역">
           <Wrap>
             {districts.map((d) => (
@@ -91,6 +97,9 @@ export default function SettingsScreen({ navigation }: RootScreenProps<'Settings
       </Section>
 
       <Section title="계정">
+        {mode === 'server' ? (
+          <Button label="로그아웃" variant="secondary" icon="log-out-outline" onPress={actions.signOut} />
+        ) : null}
         {confirmDelete ? (
           <InlineConfirm
             tone="danger"
@@ -104,20 +113,22 @@ export default function SettingsScreen({ navigation }: RootScreenProps<'Settings
         )}
       </Section>
 
-      <Section title="프로토타입 도구">
-        <Banner tone="warn" icon="construct-outline">
-          시연과 인터뷰용 기능이에요. 실제 앱에는 없어요.
-        </Banner>
-        <Button
-          label={me.foundingHost ? '창립 모임장 해제' : '창립 모임장으로 보기 (모임 열기 체험)'}
-          variant="secondary"
-          onPress={() => actions.proto('foundingHost')}
-        />
-        <Row>
-          <Button label="노쇼 1회 추가" variant="secondary" onPress={() => actions.proto('addNoShow')} style={{ flex: 1 }} />
-          <Button label="노쇼 기록 지우기" variant="secondary" onPress={() => actions.proto('clearNoShows')} style={{ flex: 1 }} />
-        </Row>
-      </Section>
+      {mode === 'local' ? (
+        <Section title="프로토타입 도구">
+          <Banner tone="warn" icon="construct-outline">
+            시연과 인터뷰용 기능이에요. 실제 앱에는 없어요.
+          </Banner>
+          <Button
+            label={me.foundingHost ? '창립 모임장 해제' : '창립 모임장으로 보기 (모임 열기 체험)'}
+            variant="secondary"
+            onPress={() => actions.proto('foundingHost')}
+          />
+          <Row>
+            <Button label="노쇼 1회 추가" variant="secondary" onPress={() => actions.proto('addNoShow')} style={{ flex: 1 }} />
+            <Button label="노쇼 기록 지우기" variant="secondary" onPress={() => actions.proto('clearNoShows')} style={{ flex: 1 }} />
+          </Row>
+        </Section>
+      ) : null}
     </Screen>
   );
 }

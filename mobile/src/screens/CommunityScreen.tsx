@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { PostCard } from '../components/cards';
-import { Chip, EmptyState, Txt } from '../components/ui';
+import { Chip, EmptyState, Txt, useRefresh } from '../components/ui';
 import { useMe, useStore, useVisible } from '../data/store';
 import { boardLabel, topicLabel } from '../domain/labels';
 import type { Board, FeedbackTopic } from '../domain/types';
@@ -22,7 +22,8 @@ const boards: Board[] = ['feedback', 'lounge', 'qna'];
 
 export default function CommunityScreen({ navigation }: Props) {
   const me = useMe();
-  const { state } = useStore();
+  const { state, mode, actions } = useStore();
+  const refresh = useRefresh(mode === 'server' ? actions.refresh : undefined);
   const { posts } = useVisible();
   const c = usePalette();
   const [board, setBoard] = useState<Board>('feedback');
@@ -66,7 +67,7 @@ export default function CommunityScreen({ navigation }: Props) {
         })}
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 110 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 110 }} refreshControl={refresh}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}

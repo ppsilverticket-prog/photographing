@@ -3,7 +3,9 @@
 Expo SDK 57(React Native, TypeScript)로 만든 앱 프로토타입입니다. 하나의 코드로 아이폰과 안드로이드 앱을 만듭니다.
 
 - 웹 미리보기: https://claude.ai/artifact/TEMKut17TkMk4dGiJ2JwW9 (비공개. 휴대폰 브라우저로 열면 앱처럼 보여요)
-- 지금 단계: **프로토타입**. 서버 없이 기기 메모리에서만 동작하고, 앱을 다시 열면 처음 상태로 돌아갑니다.
+- 동작 방식이 두 가지입니다.
+  - **서버 모드**: `mobile/.env.local`에 Supabase 접속 정보가 있으면 실제 서버에 가입하고 모임·글이 저장됩니다. 아래 "서버에 연결하기" 참고.
+  - **예시 데이터 모드**: 접속 정보가 없으면 기기 메모리의 예시 데이터로 동작하고, 앱을 다시 열면 처음 상태로 돌아갑니다. 인터뷰 시연용입니다. 웹 미리보기는 이 모드입니다.
 
 ## 내 휴대폰에서 실행하기
 
@@ -19,6 +21,51 @@ Expo SDK 57(React Native, TypeScript)로 만든 앱 프로토타입입니다. �
    ```
 4. 터미널에 QR 코드가 나오면 아이폰은 카메라 앱으로, 안드로이드는 Expo Go 앱으로 찍습니다.
 5. 컴퓨터와 휴대폰이 같은 와이파이에 있어야 합니다. 회사 와이파이처럼 막혀 있으면 `npx expo start --tunnel`을 씁니다.
+
+## 서버에 연결하기
+
+**1. 접속 정보 넣기.** `mobile/.env.example`을 `mobile/.env.local`로 복사하고 값을 채웁니다. 이 파일은 git에 올라가지 않습니다.
+
+```
+EXPO_PUBLIC_SUPABASE_URL=https://프로젝트ID.supabase.co
+EXPO_PUBLIC_SUPABASE_KEY=sb_publishable_...
+```
+
+**2. 캐시를 지우고 시작하기.** 접속 정보는 빌드할 때 앱에 들어가므로 처음 한 번은 꼭 `--clear`를 붙입니다.
+
+```bash
+npx expo start --clear
+```
+
+**3. 이메일 확인 끄기 (개발 중에만).** Supabase 대시보드 **Authentication → Sign In / Providers → Email**에서 **Confirm email**을 끕니다. 켜 두면 가입 후 확인 메일을 눌러야 로그인되는데, Supabase 기본 메일은 한 시간에 몇 통만 보내고 팀원 주소로만 갑니다. 출시 전에는 카카오·Apple 로그인으로 바꾸고 다시 켭니다.
+
+**4. 앱에서 가입하기.** 이메일과 비밀번호로 가입하고 이름·활동 유형·지역을 정합니다.
+
+**5. 테스트 계정을 본인인증 완료로 바꾸기.** PASS 연동 전이라 SQL Editor에서 직접 바꿉니다. 인증 전에는 모임 참여, 모임 만들기, 글쓰기가 막혀 있습니다 (DB 규칙).
+
+```sql
+-- 개발용: 이메일로 가입한 계정을 본인인증 완료로 바꾼다. 생년월일로 연령대가 정해진다
+select public.record_identity_verification(id, 'dev-' || id::text, '1994-01-01', 'dev')
+from auth.users where email = '가입한 이메일';
+
+-- 모임을 바로 열어 보려면 창립 모임장으로 지정한다 (보통은 다른 모임에 1번 참석해야 열 수 있다)
+update public.profiles set is_founding_host = true
+where id = (select id from auth.users where email = '가입한 이메일');
+```
+
+앱에서 화면을 아래로 당기면 새로고침됩니다.
+
+**서버 모드에서 해 볼 것**
+
+| 확인할 것 | 방법 |
+|---|---|
+| 가입과 프로필 | 가입 → 이름·유형·지역 → 홈. 인증 전에는 홈에 "본인인증 전" 안내 |
+| 모임 열기 | 창립 모임장으로 지정한 계정으로 모임 만들기 |
+| 참여 신청과 승인 | 두 번째 계정으로 승인제 모임에 신청 → 첫 계정의 모임 상세 "모임장 관리"에서 승인 |
+| 채팅 | 두 계정이 같은 모임 채팅에서 주고받기 (실시간) |
+| 사진 올리기 | 커뮤니티 → 사진 올리기. 저장소 `post-photos` 버킷에 `계정id/파일.jpg`로 올라감 |
+| 출석 | 모임 시작 후 모임장 관리에서 참석·노쇼 체크 → MY의 숫자가 바뀜 |
+| 차단·신고·계정 삭제 | 설정과 모임·글의 더 보기 메뉴 |
 
 ## 들어 있는 화면
 
@@ -43,7 +90,7 @@ Expo SDK 57(React Native, TypeScript)로 만든 앱 프로토타입입니다. �
 ## 개발
 
 ```bash
-npm test           # 규칙과 상태 테스트 (25개)
+npm test           # 규칙·상태·DB 계약 테스트 (34개)
 npm run typecheck  # 타입 검사
 npm run lint       # 린트
 ```
@@ -54,7 +101,7 @@ npm run lint       # 린트
 
 | 순서 | 일 | 비고 |
 |---|---|---|
-| 1 | Supabase 프로젝트 만들고 DB 적용, 앱 연결 | DB 구조는 완성 ([`../docs/08-database.md`](../docs/08-database.md)). 계정 생성은 운영자가 직접. `src/data/store.tsx`의 동작을 서버 호출로 바꾸고, 온보딩의 연령대 질문은 본인인증 결과로 대체 |
+| 1 | ~~Supabase 프로젝트 만들고 DB 적용, 앱 연결~~ (완료, 위 "서버에 연결하기") | DB 구조는 완성 ([`../docs/08-database.md`](../docs/08-database.md)). 계정 생성은 운영자가 직접. `src/data/store.tsx`의 동작을 서버 호출로 바꾸고, 온보딩의 연령대 질문은 본인인증 결과로 대체 |
 | 2 | 카카오 로그인, Sign in with Apple | 네이티브 모듈이라 개발 빌드(EAS) 필요. Expo Go로는 못 봄 |
 | 3 | PASS 본인인증 연동 | 본인인증 대행사 계약 필요 |
 | 4 | 카카오맵 | 카카오 개발자 앱 키 필요 |

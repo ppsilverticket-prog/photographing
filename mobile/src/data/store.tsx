@@ -1,50 +1,30 @@
-// 앱 상태. 프로토타입은 기기 메모리에만 저장하고, 앱을 다시 열면 처음 상태로 돌아간다.
-// 서버를 붙일 때는 이 파일의 동작(actions)을 Supabase 호출로 바꾼다.
+// 앱 상태. 서버 설정(mobile/.env.local)이 있으면 Supabase를, 없으면 기기 메모리의 예시 데이터를 쓴다.
+// 예시 데이터 모드는 앱을 다시 열면 처음 상태로 돌아간다. 인터뷰 시연용이다.
 import { createContext, type ReactNode, useContext, useMemo, useReducer } from 'react';
 
 import { buildMeetup, type MeetupDraft } from '../domain/meetupRules';
 import { classifyCancellation } from '../domain/noShow';
-import type {
-  ActivityType,
-  AgeBand,
-  Answer,
-  ChatMessage,
-  Genre,
-  Meetup,
-  Member,
-  Post,
-  Report,
-  ReportReason,
-  ReportTargetKind,
-} from '../domain/types';
+import type { Answer, ChatMessage, Meetup, Member, Post, Report } from '../domain/types';
+import { supabase } from '../lib/supabase';
 import { seedChats, seedMeetups, seedMembers, seedPosts } from './mock';
+import { ServerStoreProvider } from './server/serverStore';
+import {
+  type AppState,
+  emptyState,
+  type NewPost,
+  type OnboardingProfile,
+  type ProfileChange,
+  type Store,
+} from './storeTypes';
 
+export type { AppState, OnboardingProfile, Store } from './storeTypes';
+
+/** 예시 데이터 모드에서 나를 가리키는 id */
 export const ME = 'me';
-
-export interface OnboardingProfile {
-  name: string;
-  type: ActivityType;
-  age: AgeBand;
-  genres: Genre[];
-  district: string;
-}
-
-export interface AppState {
-  me: Member | null;
-  members: Record<string, Member>;
-  meetups: Meetup[];
-  posts: Post[];
-  /** 모임장 승인을 기다리는 내 참여 신청 */
-  pending: string[];
-  blocked: string[];
-  reports: Report[];
-  chats: ChatMessage[];
-  liked: string[];
-}
 
 type Action =
   | { type: 'onboard'; profile: OnboardingProfile }
-  | { type: 'updateProfile'; change: Partial<Pick<Member, 'type' | 'age' | 'district' | 'genres'>> }
+  | { type: 'updateProfile'; change: ProfileChange }
   | { type: 'join'; meetupId: string }
   | { type: 'approvePending'; meetupId: string }
   | { type: 'cancel'; meetupId: string; at: Date }
@@ -61,15 +41,11 @@ type Action =
 
 export function initialState(now = new Date()): AppState {
   return {
-    me: null,
+    ...emptyState(),
     members: Object.fromEntries(seedMembers.map((m) => [m.id, m])),
     meetups: seedMeetups(now),
     posts: seedPosts(now),
-    pending: [],
-    blocked: [],
-    reports: [],
     chats: seedChats(now),
-    liked: [],
   };
 }
 
@@ -185,65 +161,101 @@ export function reducer(state: AppState, action: Action): AppState {
 }
 
 const newId = (prefix: string) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+const noop = () => {};
 
-function useStoreValue() {
+function useLocalStore(): Store {
   const [state, dispatch] = useReducer(reducer, undefined, () => initialState());
 
-  const actions = useMemo(
+  const actions = useMemo<Store['actions']>(
     () => ({
-      onboard: (profile: OnboardingProfile) => dispatch({ type: 'onboard', profile }),
-      updateProfile: (change: Partial<Pick<Member, 'type' | 'age' | 'district' | 'genres'>>) =>
-        dispatch({ type: 'updateProfile', change }),
-      join: (meetupId: string) => dispatch({ type: 'join', meetupId }),
-      approvePending: (meetupId: string) => dispatch({ type: 'approvePending', meetupId }),
-      cancel: (meetupId: string) => dispatch({ type: 'cancel', meetupId, at: new Date() }),
-      createMeetup: (draft: MeetupDraft): string => {
+      onboard: async (profile) => {
+        dispatch({ type: 'onboard', profile });
+        return true;
+      },
+      updateProfile: (change) => dispatch({ type: 'updateProfile', change }),
+      join: (meetupId) => dispatch({ type: 'join', meetupId }),
+      approvePending: (meetupId) => dispatch({ type: 'approvePending', meetupId }),
+      cancel: (meetupId) => dispatch({ type: 'cancel', meetupId, at: new Date() }),
+      createMeetup: async (draft: MeetupDraft) => {
         const id = newId('m');
         dispatch({ type: 'createMeetup', meetup: buildMeetup(draft, id, ME) });
         return id;
       },
-      block: (memberId: string) => dispatch({ type: 'block', memberId }),
-      unblock: (memberId: string) => dispatch({ type: 'unblock', memberId }),
-      report: (targetKind: ReportTargetKind, targetId: string, reason: ReportReason, detail: string) =>
+      block: (memberId) => dispatch({ type: 'block', memberId }),
+      unblock: (memberId) => dispatch({ type: 'unblock', memberId }),
+      report: async (targetKind, targetId, reason, detail) => {
         dispatch({
           type: 'report',
           report: { id: newId('r'), targetKind, targetId, reason, detail, createdAt: new Date().toISOString() },
-        }),
-      addPost: (post: Omit<Post, 'id' | 'authorId' | 'createdAt' | 'answers' | 'likes'>): string => {
+        });
+        return true;
+      },
+      addPost: async (post: NewPost) => {
         const id = newId('p');
         dispatch({
           type: 'addPost',
-          post: { ...post, id, authorId: ME, createdAt: new Date().toISOString(), answers: [], likes: 0 },
+          post: {
+            id,
+            authorId: ME,
+            board: post.board,
+            topic: post.topic,
+            title: post.title,
+            body: post.body,
+            exif: post.exif,
+            gearNote: post.gearNote,
+            photoUri: post.photoUri,
+            createdAt: new Date().toISOString(),
+            answers: [],
+            likes: 0,
+          },
         });
         return id;
       },
-      answer: (postId: string, body: string) =>
+      answer: (postId, body) =>
         dispatch({
           type: 'answer',
           postId,
           answer: { id: newId('a'), authorId: ME, body, createdAt: new Date().toISOString() },
         }),
-      toggleLike: (postId: string) => dispatch({ type: 'toggleLike', postId }),
-      chat: (meetupId: string, body: string) =>
+      toggleLike: (postId) => dispatch({ type: 'toggleLike', postId }),
+      chat: (meetupId, body) =>
         dispatch({
           type: 'chat',
           message: { id: newId('c'), meetupId, authorId: ME, body, createdAt: new Date().toISOString() },
         }),
       deleteAccount: () => dispatch({ type: 'deleteAccount' }),
-      proto: (change: 'foundingHost' | 'addNoShow' | 'clearNoShows') => dispatch({ type: 'proto', change }),
+      proto: (change) => dispatch({ type: 'proto', change }),
+      // 아래는 서버 모드에서만 의미가 있다
+      decide: noop,
+      markAttendance: noop,
+      subscribeChat: () => noop,
+      refresh: async () => {},
+      signIn: async () => ({}),
+      signUp: async () => ({}),
+      signOut: noop,
     }),
     [],
   );
 
-  return useMemo(() => ({ state, actions }), [state, actions]);
+  return useMemo(() => ({ mode: 'local' as const, state, actions }), [state, actions]);
 }
 
-type Store = ReturnType<typeof useStoreValue>;
 const StoreContext = createContext<Store | null>(null);
 
-export function StoreProvider({ children }: { children: ReactNode }) {
-  const value = useStoreValue();
+function LocalStoreProvider({ children }: { children: ReactNode }) {
+  const value = useLocalStore();
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
+}
+
+export function StoreProvider({ children }: { children: ReactNode }) {
+  if (supabase) {
+    return (
+      <ServerStoreProvider client={supabase} context={StoreContext}>
+        {children}
+      </ServerStoreProvider>
+    );
+  }
+  return <LocalStoreProvider>{children}</LocalStoreProvider>;
 }
 
 export function useStore(): Store {
@@ -257,6 +269,12 @@ export function useMe(): Member {
   const { state } = useStore();
   if (!state.me) throw new Error('가입 전에는 이 화면을 열 수 없어요.');
   return state.me;
+}
+
+/** 내 id. 예시 데이터 모드는 'me', 서버 모드는 계정 id */
+export function useMyId(): string {
+  const { state } = useStore();
+  return state.me?.id ?? state.authUserId ?? '';
 }
 
 /** 차단한 사람의 모임과 글은 보이지 않는다 (운영정책 3절) */

@@ -1,16 +1,17 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Avatar, Button, EmptyState, Row, Txt } from '../components/ui';
-import { ME, useStore } from '../data/store';
+import { useMyId, useStore } from '../data/store';
 import { formatTime } from '../domain/format';
 import type { RootScreenProps } from '../navigation/types';
 import { fonts, radius, space, usePalette } from '../theme';
 
 export default function ChatScreen({ route, navigation }: RootScreenProps<'Chat'>) {
   const { state, actions } = useStore();
+  const myId = useMyId();
   const c = usePalette();
   const insets = useSafeAreaInsets();
   const [text, setText] = useState('');
@@ -23,8 +24,12 @@ export default function ChatScreen({ route, navigation }: RootScreenProps<'Chat'
     if (meetup) navigation.setOptions({ title: meetup.title });
   }, [navigation, meetup]);
 
+  // 새 메시지를 실시간으로 받는다 (서버 모드)
+  const { meetupId } = route.params;
+  useEffect(() => actions.subscribeChat(meetupId), [actions, meetupId]);
+
   // 참여가 확정된 사람만 모임 채팅에 들어올 수 있다
-  if (!meetup || !meetup.participantIds.includes(ME)) {
+  if (!meetup || !meetup.participantIds.includes(myId)) {
     return (
       <View style={{ flex: 1, backgroundColor: c.bg }}>
         <EmptyState icon="lock-closed-outline" title="참여가 확정된 사람만 볼 수 있어요" />
@@ -91,7 +96,7 @@ export default function ChatScreen({ route, navigation }: RootScreenProps<'Chat'
         onContentSizeChange={() => scroll.current?.scrollToEnd({ animated: false })}
       >
         {messages.map((m) => {
-          const mine = m.authorId === ME;
+          const mine = m.authorId === myId;
           const author = state.members[m.authorId];
           return (
             <View key={m.id} style={[styles.msgRow, { justifyContent: mine ? 'flex-end' : 'flex-start' }]}>

@@ -121,6 +121,6 @@ export function seatsLeft(m: Meetup): number {
 /** 대상 유형·연령대 제한에 맞는가. 비어 있으면 누구나 */
 export function isEligible(m: Meetup, member: Pick<Member, 'type' | 'age'>): boolean {
   const typeOk = m.targetTypes.length === 0 || m.targetTypes.includes(member.type);
-  const ageOk = m.targetAges.length === 0 || m.targetAges.includes(member.age);
+  const ageOk = m.targetAges.length === 0 || (member.age !== null && m.targetAges.includes(member.age));
   return typeOk && ageOk;
 }

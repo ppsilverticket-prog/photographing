@@ -124,8 +124,8 @@ DATABASE_URL=postgres://postgres@127.0.0.1:5432/postgres npm test
 | 계정 삭제 Edge Function | Apple 로그인 토큰을 해지한 뒤 `delete_my_account` (Apple 5.1.1(v)) |
 | 사진 서버 처리 | 업로드된 사진을 서버에서 한 번 더 다시 저장해 EXIF 제거 (운영정책 D2 두 번째 단계) |
 | 푸시 알림 | 승인·거절, 모임 전날, 취소, 신고 결과 |
-| 앱 연결 | `mobile/src/data/store.tsx`의 동작을 supabase-js 호출로 바꾸기, `supabase gen types`로 타입 생성 |
-| 앱 온보딩 변경 | 연령대는 본인인증 결과로 자동으로 정해지므로 온보딩의 연령대 질문을 뺀다 |
+| ~~앱 연결~~ | 완료. 설정 방법은 [`../mobile/README.md`](../mobile/README.md) "서버에 연결하기". 남은 것: `supabase gen types`로 타입 생성 |
+| ~~앱 온보딩 변경~~ | 완료. 서버 모드에서는 연령대를 묻지 않는다 |
 | 시드 데이터 | 로컬 개발용 `supabase/seed.sql` (앱의 예시 데이터와 같은 내용) |
 
 **확인 필요** (운영정책 8절과 연결)

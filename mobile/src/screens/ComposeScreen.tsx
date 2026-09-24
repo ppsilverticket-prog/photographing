@@ -48,6 +48,7 @@ export default function ComposeScreen({ navigation }: RootScreenProps<'Compose'>
   const [body, setBody] = useState('');
   const [hasPerson, setHasPerson] = useState(false);
   const [consent, setConsent] = useState(false);
+  const [sending, setSending] = useState(false);
 
   const pick = async () => {
     setPickError(null);
@@ -65,11 +66,12 @@ export default function ComposeScreen({ navigation }: RootScreenProps<'Compose'>
 
   const needsPhoto = board === 'feedback';
   const ready =
-    title.trim().length >= 4 && body.trim().length >= 10 && (!needsPhoto || photo) && (!hasPerson || consent) && !working;
+    title.trim().length >= 4 && body.trim().length >= 10 && (!needsPhoto || photo) && (!hasPerson || consent) && !working && !sending;
 
-  const submit = () => {
+  const submit = async () => {
     if (!ready) return;
-    const id = actions.addPost({
+    setSending(true);
+    const id = await actions.addPost({
       board,
       topic: board === 'feedback' ? topic : 'general',
       title: title.trim(),
@@ -77,8 +79,13 @@ export default function ComposeScreen({ navigation }: RootScreenProps<'Compose'>
       exif: photo && !isEmptyExif(photo.exif) ? photo.exif : undefined,
       gearNote: gearNote.trim() || undefined,
       photoUri: photo?.uri,
+      photoWidth: photo?.width,
+      photoHeight: photo?.height,
+      hasIdentifiablePerson: hasPerson,
+      personConsent: consent,
     });
-    navigation.replace('PostDetail', { id });
+    setSending(false);
+    if (id) navigation.replace('PostDetail', { id });
   };
 
   return (
@@ -88,6 +95,7 @@ export default function ComposeScreen({ navigation }: RootScreenProps<'Compose'>
           label={board === 'feedback' ? '피드백 요청 올리기' : '글 올리기'}
           onPress={submit}
           disabled={!ready}
+          loading={sending}
           accessibilityHint="제목 4자, 내용 10자 이상이 필요해요"
         />
       }

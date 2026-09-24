@@ -17,7 +17,7 @@ import {
   Tag,
   Txt,
 } from '../components/ui';
-import { ME, useStore } from '../data/store';
+import { useMyId, useStore } from '../data/store';
 import { formatExifLine, isEmptyExif } from '../domain/exif';
 import { relativeTime } from '../domain/format';
 import { activityLabel, boardLabel, topicLabel } from '../domain/labels';
@@ -26,12 +26,13 @@ import { radius, space, usePalette } from '../theme';
 
 export default function PostDetailScreen({ route, navigation }: RootScreenProps<'PostDetail'>) {
   const { state, actions } = useStore();
+  const myId = useMyId();
   const c = usePalette();
   const [menuOpen, setMenuOpen] = useState(false);
   const [answer, setAnswer] = useState('');
 
   const post = state.posts.find((p) => p.id === route.params.id);
-  const mine = post?.authorId === ME;
+  const mine = post?.authorId === myId;
 
   useLayoutEffect(() => {
     navigation.setOptions({

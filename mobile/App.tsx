@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { ToastProvider } from './src/components/toast';
 import { StoreProvider } from './src/data/store';
 import RootNavigator from './src/navigation/RootNavigator';
 import { usePalette } from './src/theme';
@@ -28,10 +29,12 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <StoreProvider>
-        <RootNavigator />
-        <StatusBar style="auto" />
-      </StoreProvider>
+      <ToastProvider>
+        <StoreProvider>
+          <RootNavigator />
+          <StatusBar style="auto" />
+        </StoreProvider>
+      </ToastProvider>
     </SafeAreaProvider>
   );
 }

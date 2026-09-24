@@ -19,7 +19,8 @@ export interface Member {
   id: string;
   name: string;
   type: ActivityType;
-  age: AgeBand;
+  /** 서버 모드에서는 본인인증 결과로 정해진다. 인증 전에는 null */
+  age: AgeBand | null;
   district: string;
   genres: Genre[];
   bio?: string;
@@ -108,6 +109,15 @@ export interface Report {
   reason: ReportReason;
   detail: string;
   createdAt: string;
+}
+
+/** 모임 참여 기록. 모임장 화면(승인·출석)에 쓴다 */
+export interface Participation {
+  meetupId: string;
+  userId: string;
+  role: 'host' | 'member';
+  status: 'pending' | 'confirmed' | 'declined' | 'canceled';
+  attendance: 'attended' | 'no_show' | null;
 }
 
 export interface ChatMessage {
