@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>포토그래핑</title>
+<meta name="description" content="서울에서 열리는 출사 모임을 찾고, 직접 열고, 찍은 사진에 구체적인 피드백을 주고받는 사진 모임 앱. 베타 초대 신청과 창립 모임장 지원을 받고 있어요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="포토그래핑 · 사진 찍는 사람을 만나는 곳">
+<meta property="og:description" content="서울 출사 모임을 찾고, 열고, 찍은 사진에 피드백을 주고받는 사진 모임 앱. 베타 초대 신청을 받고 있어요.">
+<meta property="og:locale" content="ko_KR">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --bg:#FFFFFF; --surface:#F3F1ED; --ink:#1F1D1A; --muted:#5F5A54; --faint:#8A847C; --line:#D9D5CF;
+  --accent:#0F6E63; --accent-ink:#0B5249; --accent-soft:#DDEFEC; --on-accent:#FFFFFF;
+  --warn:#8A5A00; --warn-soft:#FBEFD6;
+  --vf-bg:#141311; --vf-ink:#F2EFEA; --vf-soft:#D6D1C9; --vf-dim:#A39D94; --vf-line:rgba(242,239,234,.14); --vf-mark:#5BD1BF; --vf-on-mark:#0B1F1C;
+  --sans:"IBM Plex Sans KR",-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --radius:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#141312; --surface:#1E1C1A; --ink:#EDEAE4; --muted:#ABA59C; --faint:#857F77; --line:#34312D;
+    --accent:#5BBFB0; --accent-ink:#86D6CA; --accent-soft:#17332F; --on-accent:#0B1F1C;
+    --warn:#E0B566; --warn-soft:#3A2E17;
+    --vf-bg:#0C0C0B; --vf-line:rgba(242,239,234,.12);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#141312; --surface:#1E1C1A; --ink:#EDEAE4; --muted:#ABA59C; --faint:#857F77; --line:#34312D;
+  --accent:#5BBFB0; --accent-ink:#86D6CA; --accent-soft:#17332F; --on-accent:#0B1F1C;
+  --warn:#E0B566; --warn-soft:#3A2E17;
+  --vf-bg:#0C0C0B; --vf-line:rgba(242,239,234,.12);
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased;word-break:keep-all;overflow-wrap:anywhere}
+a{color:var(--accent)}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:6px}
+h1,h2,h3{text-wrap:balance;margin:0;line-height:1.25}
+p{margin:0}
+.wrap{width:100%;max-width:1040px;margin:0 auto;padding-inline:20px}
+
+/* 상단 */
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;color:var(--ink);text-decoration:none;letter-spacing:-.01em}
+.brand svg{flex-shrink:0}
+.top nav{display:flex;gap:20px;font-size:14px}
+.top nav a{color:var(--muted);text-decoration:none}
+.top nav a:hover{color:var(--ink)}
+
+/* 뷰파인더 히어로 */
+.vf{position:relative;background:var(--vf-bg);color:var(--vf-ink);border-radius:20px;padding:22px 28px;display:flex;flex-direction:column;gap:40px;overflow:hidden;isolation:isolate}
+.vf-thirds{position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:
+    linear-gradient(var(--vf-line),var(--vf-line)) 33.333% 0/1px 100% no-repeat,
+    linear-gradient(var(--vf-line),var(--vf-line)) 66.666% 0/1px 100% no-repeat,
+    linear-gradient(var(--vf-line),var(--vf-line)) 0 33.333%/100% 1px no-repeat,
+    linear-gradient(var(--vf-line),var(--vf-line)) 0 66.666%/100% 1px no-repeat}
+.vf-corner{position:absolute;width:22px;height:22px;border:0 solid var(--vf-dim)}
+.vf-corner.tl{top:12px;left:12px;border-top-width:2px;border-left-width:2px}
+.vf-corner.tr{top:12px;right:12px;border-top-width:2px;border-right-width:2px}
+.vf-corner.bl{bottom:12px;left:12px;border-bottom-width:2px;border-left-width:2px}
+.vf-corner.br{bottom:12px;right:12px;border-bottom-width:2px;border-right-width:2px}
+.readout{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:var(--vf-dim);font-variant-numeric:tabular-nums}
+.readout b{color:var(--vf-ink);font-weight:500}
+.rec{display:inline-flex;align-items:center;gap:8px}
+.rec::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--vf-mark)}
+.count{border:1px solid var(--vf-dim);border-radius:4px;padding:0 6px;color:var(--vf-ink)}
+.vf-body{display:flex;flex-direction:column;gap:22px;max-width:40rem;padding-block:28px 12px}
+.vf h1{font-size:clamp(2.1rem,6.4vw,3.9rem);font-weight:700;letter-spacing:-.035em;line-height:1.14}
+.af{position:relative;display:inline-block;padding:0 .14em;margin:0 -.04em}
+.af::after{content:"";position:absolute;inset:.06em -.02em .02em;pointer-events:none;
+  --c:var(--vf-mark); --l:.3em; --w:3px;
+  background:
+    linear-gradient(var(--c),var(--c)) 0 0/var(--l) var(--w) no-repeat,
+    linear-gradient(var(--c),var(--c)) 0 0/var(--w) var(--l) no-repeat,
+    linear-gradient(var(--c),var(--c)) 100% 0/var(--l) var(--w) no-repeat,
+    linear-gradient(var(--c),var(--c)) 100% 0/var(--w) var(--l) no-repeat,
+    linear-gradient(var(--c),var(--c)) 0 100%/var(--l) var(--w) no-repeat,
+    linear-gradient(var(--c),var(--c)) 0 100%/var(--w) var(--l) no-repeat,
+    linear-gradient(var(--c),var(--c)) 100% 100%/var(--l) var(--w) no-repeat,
+    linear-gradient(var(--c),var(--c)) 100% 100%/var(--w) var(--l) no-repeat;
+  animation:af-lock .9s cubic-bezier(.2,.8,.2,1) .35s both}
+@keyframes af-lock{
+  0%{transform:scale(1.35);opacity:.35;filter:grayscale(1)}
+  60%{transform:scale(.96);opacity:1;filter:grayscale(1)}
+  100%{transform:scale(1);opacity:1;filter:none}
+}
+.vf-lede{font-size:clamp(1rem,2.2vw,1.125rem);color:var(--vf-soft);max-width:34rem;line-height:1.7}
+.cta-row{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;white-space:nowrap;padding:0 22px;border-radius:999px;font-weight:600;font-size:15px;text-decoration:none;transition:transform .15s ease,background-color .15s ease}
+.btn:hover{transform:translateY(-1px)}
+.btn-mark{background:var(--vf-mark);color:var(--vf-on-mark)}
+.btn-ghost{border:1px solid rgba(242,239,234,.4);color:var(--vf-ink)}
+.btn-ghost:hover{background:rgba(242,239,234,.08)}
+.btn-accent{background:var(--accent);color:var(--on-accent)}
+.btn-line{border:1px solid var(--line);color:var(--ink);background:var(--bg)}
+.btn-line:hover{border-color:var(--ink)}
+
+/* 섹션 공통 */
+main{display:flex;flex-direction:column;gap:88px;padding-block:28px 96px}
+.sec-head{display:flex;flex-direction:column;gap:10px;margin-bottom:28px;max-width:42rem}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.sec-head h2{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:700;letter-spacing:-.025em}
+.sec-head p{color:var(--muted)}
+
+/* 예시 모임 카드 */
+.meetups{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px}
+.meet{border:1px solid var(--line);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:14px;background:var(--bg)}
+.meet-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.chip{font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent-ink);white-space:nowrap}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.sample{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--faint)}
+.meet h3{font-size:18px;font-weight:700;letter-spacing:-.015em}
+.meta{display:flex;flex-direction:column;gap:2px;font-size:14px;color:var(--muted)}
+.spec{font-family:var(--mono);font-size:12.5px;color:var(--ink);background:var(--surface);border-radius:8px;padding:8px 10px;letter-spacing:.01em}
+.who{display:flex;flex-direction:column;gap:8px;padding-top:14px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.seats{display:flex;align-items:center;gap:10px;font-variant-numeric:tabular-nums}
+.bar{flex:1;height:6px;border-radius:3px;background:var(--surface);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+.seats b{color:var(--ink);font-weight:600}
+
+/* 흐름 */
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:32px;list-style:none;margin:0;padding:0;counter-reset:step}
+.steps li{display:flex;flex-direction:column;gap:10px;counter-increment:step}
+.steps li::before{content:counter(step);font-family:var(--mono);font-size:13px;font-weight:500;color:var(--accent);width:32px;height:32px;border:1.5px solid var(--accent);border-radius:50%;display:grid;place-items:center}
+.steps h3{font-size:19px;font-weight:700;letter-spacing:-.015em}
+.steps p{color:var(--muted);font-size:15px}
+.exif{font-family:var(--mono);font-size:12.5px;color:var(--ink);display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 12px;border:1px dashed var(--line);border-radius:8px;font-variant-numeric:tabular-nums}
+.exif s{color:var(--faint);text-decoration-thickness:1.5px}
+
+/* 안심 */
+.safe{background:var(--surface);border-radius:20px;padding:40px 32px}
+.safe-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:22px 32px;list-style:none;margin:0;padding:0}
+.safe-list li{display:flex;gap:12px;align-items:flex-start}
+.safe-list svg{flex-shrink:0;margin-top:3px;color:var(--accent)}
+.safe-list b{display:block;font-weight:600;font-size:16px}
+.safe-list span{color:var(--muted);font-size:14.5px}
+
+/* 창립 모임장 */
+.host{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:40px;align-items:start}
+.host .sec-head{margin-bottom:0}
+.host-note{margin-top:18px;padding:14px 16px;border-radius:10px;background:var(--accent-soft);color:var(--accent-ink);font-size:14.5px;line-height:1.6}
+.perks{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.perks dl{margin:0}
+.perks div{display:grid;grid-template-columns:7.5rem 1fr;gap:12px;padding:16px 20px;border-top:1px solid var(--line)}
+.perks div:first-child{border-top:0}
+.perks dt{font-size:13px;color:var(--faint);font-weight:500;padding-top:2px}
+.perks dd{margin:0;font-size:15px}
+.perks .cta-row{padding:18px 20px;border-top:1px solid var(--line);background:var(--surface)}
+
+/* FAQ */
+.faq{display:flex;flex-direction:column;border-top:1px solid var(--line);max-width:46rem}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 2px;font-weight:600;font-size:16px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-family:var(--mono);font-size:20px;color:var(--faint);line-height:1}
+.faq details[open] summary::after{content:"−"}
+.faq details p{padding:0 2px 18px;color:var(--muted);font-size:15px;max-width:40rem}
+
+/* 신청 */
+.join{border:1px solid var(--line);border-radius:20px;padding:40px 32px;display:flex;flex-direction:column;gap:18px;align-items:flex-start}
+.join h2{font-size:clamp(1.5rem,3.6vw,2.1rem);font-weight:700;letter-spacing:-.025em}
+.join p{color:var(--muted);max-width:40rem}
+.small{font-size:13px;color:var(--faint)}
+.pending{font-size:13px;color:var(--warn);background:var(--warn-soft);padding:8px 12px;border-radius:8px}
+
+footer{border-top:1px solid var(--line);padding-block:28px 40px;font-size:13px;color:var(--faint)}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px 20px}
+
+@media (max-width:640px){
+  .wrap{padding-inline:16px}
+  .top nav{display:none}
+  .vf{padding:18px 18px;gap:28px;border-radius:16px}
+  .vf-corner{width:16px;height:16px}
+  .vf-body{padding-block:16px 4px}
+  .safe,.join{padding:28px 20px}
+  .perks div{grid-template-columns:1fr;gap:2px}
+  main{gap:64px}
+}
+@media (prefers-reduced-motion:reduce){
+  .af::after{animation:none}
+  .btn{transition:none}
+  .btn:hover{transform:none}
+}
+</style>
+</head>
+<body>
+
+<header class="wrap top">
+  <a class="brand" href="#top" aria-label="포토그래핑 처음으로">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true"><rect x="1" y="1" width="26" height="26" rx="7" style="fill:var(--accent)"/><path d="M8 11V8h3M20 11V8h-3M8 17v3h3M20 17v3h-3" stroke-width="2" stroke-linecap="round" style="stroke:var(--on-accent)"/><circle cx="14" cy="14" r="2.2" style="fill:var(--on-accent)"/></svg>
+    포토그래핑
+  </a>
+  <nav aria-label="페이지 안 이동">
+    <a href="#meetups">모임</a>
+    <a href="#safety">안심 장치</a>
+    <a href="#host">창립 모임장</a>
+    <a href="#faq">자주 묻는 질문</a>
+  </nav>
+</header>
+
+<main id="top">
+  <div class="wrap">
+    <section class="vf" aria-labelledby="hero-title">
+      <div class="vf-thirds" aria-hidden="true"></div>
+      <span class="vf-corner tl" aria-hidden="true"></span><span class="vf-corner tr" aria-hidden="true"></span>
+      <span class="vf-corner bl" aria-hidden="true"></span><span class="vf-corner br" aria-hidden="true"></span>
+
+      <div class="readout">
+        <span class="rec">서울 베타 준비 중</span>
+        <span aria-hidden="true">AF-C &nbsp;35mm</span>
+      </div>
+
+      <div class="vf-body">
+        <h1 id="hero-title">이번 주말, <span class="af">같이</span> 찍으러 갈 사람</h1>
+        <p class="vf-lede">포토그래핑은 사진 찍는 사람들이 출사 모임을 열고, 함께 나가고, 찍은 사진에 구체적인 피드백을 주고받는 앱이에요. 올겨울 서울에서 베타를 시작합니다.</p>
+        <div class="cta-row">
+          <a class="btn btn-mark" href="#join" data-link="member">베타 초대 신청</a>
+          <a class="btn btn-ghost" href="#host">모임장으로 지원</a>
+        </div>
+      </div>
+
+      <div class="readout">
+        <span aria-hidden="true"><b>1/250</b> &nbsp;<b>ƒ/2.8</b> &nbsp;ISO <b>400</b> &nbsp;±0.0</span>
+        <span>창립 모임장 <span class="count">20</span></span>
+      </div>
+    </section>
+  </div>
+
+  <section class="wrap" id="meetups" aria-labelledby="meetups-title">
+    <div class="sec-head">
+      <span class="eyebrow">Meetups</span>
+      <h2 id="meetups-title">이런 모임이 열려요</h2>
+      <p>신청하기 전에 누가 오는지, 어떤 장비가 필요한지, 모임장이 약속을 잘 지키는지 먼저 볼 수 있어요. 아래는 예시입니다.</p>
+    </div>
+    <div class="meetups">
+      <article class="meet">
+        <div class="meet-top"><span class="chip">입문 환영</span><span class="sample">예시</span></div>
+        <h3>성수동 골목 스냅</h3>
+        <div class="meta"><span>토요일 오후 2:00 · 약 3시간</span><span>성수역 3번 출구</span></div>
+        <div class="spec">35mm 권장 · 폰카 OK · 무료</div>
+        <div class="who">
+          <div class="seats"><div class="bar"><i style="width:66.7%"></i></div><b>4 / 6명</b></div>
+          <span>입문 2 · 아마추어 2 · 모임장 참석률 98%</span>
+        </div>
+      </article>
+      <article class="meet">
+        <div class="meet-top"><span class="chip warn">중급</span><span class="sample">예시</span></div>
+        <h3>반포 한강 야경 장노출</h3>
+        <div class="meta"><span>금요일 저녁 7:30 · 약 2시간</span><span>반포한강공원 달빛광장</span></div>
+        <div class="spec">삼각대 필수 · ND 필터 있으면 좋아요</div>
+        <div class="who">
+          <div class="seats"><div class="bar"><i style="width:37.5%"></i></div><b>3 / 8명</b></div>
+          <span>아마추어 2 · 전공 1 · 모임장 참석률 95%</span>
+        </div>
+      </article>
+      <article class="meet">
+        <div class="meet-top"><span class="chip">누구나</span><span class="sample">예시</span></div>
+        <h3>을지로 필름 산책</h3>
+        <div class="meta"><span>일요일 오전 11:00 · 약 2시간</span><span>을지로3가역 1번 출구</span></div>
+        <div class="spec">필름 1롤 · 끝나고 현상소 같이 가요</div>
+        <div class="who">
+          <div class="seats"><div class="bar"><i style="width:83.3%"></i></div><b>5 / 6명</b></div>
+          <span>입문 1 · 아마추어 3 · 작가 1 · 모임장 참석률 100%</span>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap" aria-labelledby="flow-title">
+    <div class="sec-head">
+      <span class="eyebrow">How it works</span>
+      <h2 id="flow-title">찾고, 같이 찍고, 피드백 받기</h2>
+    </div>
+    <ol class="steps">
+      <li>
+        <h3>모임 찾기</h3>
+        <p>날짜, 동네, 난이도로 고르고 참여자가 입문자인지 아마추어인지 전공자인지 미리 확인해요. 마음에 드는 모임이 없으면 직접 열면 돼요.</p>
+      </li>
+      <li>
+        <h3>같이 찍기</h3>
+        <p>참여가 확정되면 모임 채팅방이 열려요. 현장에서 출석을 확인하고, 끝나면 서로 매너 후기를 남겨요.</p>
+      </li>
+      <li>
+        <h3>피드백 받기</h3>
+        <p>찍은 사진을 올리고 "하늘이 너무 날아갔는지 봐 주세요"처럼 물으면, 같은 분야 사람들이 구체적으로 답해요.</p>
+        <div class="exif" aria-label="촬영 정보는 보이고 위치 정보는 지워지는 예시">
+          <span>1/60s</span><span>ƒ/1.8</span><span>ISO 1600</span><span>50mm</span><s>GPS 37.54, 127.05</s>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <div class="wrap">
+    <section class="safe" id="safety" aria-labelledby="safety-title">
+      <div class="sec-head">
+        <span class="eyebrow">Safety</span>
+        <h2 id="safety-title">처음 보는 사람과 나가는 모임이니까</h2>
+        <p>오프라인에서 만나는 서비스라서 안전을 가장 먼저 설계했어요.</p>
+      </div>
+      <ul class="safe-list">
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg><div><b>휴대폰 본인인증, 만 19세 이상</b><span>실명 확인을 거친 성인만 가입할 수 있어요.</span></div></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 7V3M16 7V3M4 11h16M5 5h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z"/></svg><div><b>참석 기록이 남아요</b><span>출석과 매너 후기가 프로필에 쌓여서 노쇼가 보여요.</span></div></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h3l2-3h8l2 3h3v12H3z"/><path d="M4 4l16 16"/></svg><div><b>동의 없는 인물 촬영 금지</b><span>도촬이나 무단 촬영이 확인되면 이용을 제한해요.</span></div></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6-7-11a7 7 0 0114 0c0 5-7 11-7 11z"/><path d="M4 4l16 16"/></svg><div><b>사진 위치 정보 자동 삭제</b><span>올린 사진의 GPS 정보는 지우고 촬영 정보만 보여 줘요.</span></div></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg><div><b>모임 중 바로 신고</b><span>문제가 생기면 모임 화면에서 바로 운영팀에 알릴 수 있어요.</span></div></li>
+        <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><div><b>차단하면 서로 안 보여요</b><span>차단한 사람의 모임과 글이 나에게 보이지 않아요.</span></div></li>
+      </ul>
+    </section>
+  </div>
+
+  <section class="wrap host" id="host" aria-labelledby="host-title">
+    <div>
+      <div class="sec-head">
+        <span class="eyebrow">Founding hosts</span>
+        <h2 id="host-title">첫 모임을 열어 줄 창립 모임장 20명을 찾아요</h2>
+        <p>모임 앱은 열려 있는 모임이 있어야 시작돼요. 서울에서 한 달에 한 번 이상 출사를 열어 주실 분을 먼저 모시고 있어요.</p>
+      </div>
+      <p class="host-note">지금 쓰는 밴드나 카페는 그대로 두셔도 돼요. 번개 출사 하나만 여기서 열어 보세요.</p>
+    </div>
+    <div class="perks">
+      <dl>
+        <div><dt>이런 분</dt><dd>출사나 사진 모임을 열어 본 분, 동호회·동아리 운영자, 현업 작가</dd></div>
+        <div><dt>창립 배지</dt><dd>프로필과 모임 카드에 창립 모임장 배지가 붙어요</dd></div>
+        <div><dt>첫 모임 지원</dt><dd>공지 문구, 장소 추천, 참여자 모집을 운영팀이 함께 준비해요</dd></div>
+        <div><dt>의견 우선 반영</dt><dd>베타 기간 동안 모임장 간담회에서 기능을 같이 정해요</dd></div>
+      </dl>
+      <div class="cta-row">
+        <a class="btn btn-accent" href="#join" data-link="host">창립 모임장 지원하기</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" id="faq" aria-labelledby="faq-title">
+    <div class="sec-head">
+      <span class="eyebrow">FAQ</span>
+      <h2 id="faq-title">자주 묻는 질문</h2>
+    </div>
+    <div class="faq">
+      <details>
+        <summary>언제 쓸 수 있나요?</summary>
+        <p>올겨울 서울에서 초대받은 분들과 베타를 시작해요. 신청하신 순서대로 연락드려요.</p>
+      </details>
+      <details>
+        <summary>서울 말고 다른 지역은요?</summary>
+        <p>모임이 한 지역에 모여 있어야 언제 들어와도 열려 있는 모임이 있어요. 서울에서 자리를 잡은 뒤 넓혀 갈 계획이에요.</p>
+      </details>
+      <details>
+        <summary>폰으로만 찍어도 되나요?</summary>
+        <p>네. 입문자 모임, 폰카 모임도 열 수 있고 장비 조건은 모임마다 적혀 있어요.</p>
+      </details>
+      <details>
+        <summary>나이 제한이 있나요?</summary>
+        <p>오프라인에서 만나는 서비스라 만 19세 이상만 가입할 수 있어요.</p>
+      </details>
+      <details>
+        <summary>돈이 드나요?</summary>
+        <p>베타 기간에는 앱을 무료로 써요. 장소 대여비 같은 실비가 있으면 모임 소개에 미리 적혀 있어요.</p>
+      </details>
+      <details>
+        <summary>신청하면 어떤 정보를 주게 되나요?</summary>
+        <p>연락처, 연령대, 활동 유형, 활동 지역이에요. 베타 초대와 출시 안내에만 쓰고, 정식 출시 안내를 마치면 파기해요.</p>
+      </details>
+    </div>
+  </section>
+
+  <div class="wrap" id="join">
+    <section class="join" aria-labelledby="join-title">
+      <span class="eyebrow">Beta</span>
+      <h2 id="join-title">서울 베타에 먼저 초대받기</h2>
+      <p>1분이면 끝나요. 베타가 열리면 신청한 순서대로 초대 링크를 보내드려요.</p>
+      <div class="cta-row">
+        <a class="btn btn-accent" href="#join" data-link="member">베타 초대 신청</a>
+        <a class="btn btn-line" href="#join" data-link="host">창립 모임장 지원</a>
+      </div>
+      <p class="pending" id="form-pending" hidden>신청 폼을 연결하는 중이에요. 곧 열립니다.</p>
+      <p class="small">만 19세 이상 · 서울 및 서울에서 활동하는 분 우선</p>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>포토그래핑 · 사진 찍는 사람을 만나는 곳</span>
+    <span id="contact-line" hidden>문의 <span id="contact"></span></span>
+    <span>© 2026 포토그래핑</span>
+  </div>
+</footer>
+
+<script>
+// 배포 전에 채우기: 구글 폼 주소와 문의처. 비어 있으면 버튼은 아래 신청 영역으로 이동하고 "연결하는 중" 안내가 보인다.
+var LINKS = {
+  member: "",   // 베타 초대 신청 폼 (docs/06-prelaunch.md 2-1)
+  host: "",     // 창립 모임장 지원 폼 (docs/06-prelaunch.md 2-2)
+  contact: ""   // 예: 인스타그램 @계정 또는 문의 이메일
+};
+
+(function () {
+  var missing = false;
+  document.querySelectorAll("[data-link]").forEach(function (a) {
+    var url = LINKS[a.getAttribute("data-link")];
+    if (url) {
+      a.href = url;
+      a.target = "_blank";
+      a.rel = "noopener";
+    } else {
+      missing = true;
+    }
+  });
+  if (missing) document.getElementById("form-pending").hidden = false;
+  if (LINKS.contact) {
+    document.getElementById("contact").textContent = LINKS.contact;
+    document.getElementById("contact-line").hidden = false;
+  }
+})();
+</script>
+</body>
+</html>

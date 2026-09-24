@@ -169,3 +169,4 @@
 | 3 | 개발 방식(직접, 외주, 공동창업) 결정 | [04-dev-approach.md](04-dev-approach.md) | 비교표 완료, 결정 대기 |
 | 4 | 핵심 화면 와이어프레임 작성 | [../wireframes/index.html](../wireframes/index.html) | v0.1 완료 (7개 화면) |
 | 5 | 경쟁 서비스 분석 (7절 1~2주차) | [05-competitor-analysis.md](05-competitor-analysis.md) | 1차 완료, 앱 직접 사용 확인 필요 |
+| 6 | 사전 신청자·창립 모임장 모집 (7절 병행 작업) | [06-prelaunch.md](06-prelaunch.md), [../landing/index.html](../landing/index.html) | 랜딩 완성, 이름·계정 확보 후 폼 연결·배포 |
