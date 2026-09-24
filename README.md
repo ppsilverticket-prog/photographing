@@ -11,7 +11,11 @@ photographing/
 │   ├── 01-service-plan.md     ← 서비스 플랜 v1.0 (정의, 기능, MVP 범위, 일정, 지표)
 │   ├── 02-name-check.md       ← "포토그래핑" 이름·상표 확인 결과와 체크리스트
 │   ├── 03-interview-guide.md  ← 검증 인터뷰 질문지 (운영자·참여자·상업 작가)
-│   └── 04-dev-approach.md     ← 개발 방식(직접·외주·공동창업·하이브리드) 비교와 추천
+│   ├── 04-dev-approach.md     ← 개발 방식(직접·외주·공동창업·하이브리드) 비교와 추천
+│   └── interviews/
+│       ├── README.md          ← 기록 규칙(가명 ID), 진행 현황, 모집 퍼널, 종합표
+│       ├── recruiting.md      ← 모집 일정, 채널별 연락 문구, 스크리닝 폼, 동의서, 예산
+│       └── _template.md       ← 인터뷰 1명 기록 템플릿
 └── wireframes/
     └── index.html             ← MVP 핵심 화면 와이어프레임 v0.1 (브라우저로 열기)
 ```
@@ -29,7 +33,9 @@ photographing/
 
 | # | 할 일 | 상태 | 다음 행동 |
 |---|---|---|---|
-| 1 | 이름 확인 | 웹 조사 완료 | KIPRIS·앱스토어·도메인 직접 조회 후 `02-name-check.md` 표 채우기 |
-| 2 | 인터뷰 | 질문지 완료 | 15명 모집 시작. 결과는 `docs/interviews/` 에 1명 1파일 |
+| 1 | 이름 확인 | 웹 조사 완료 | KIPRIS·앱스토어·도메인 직접 조회 후 `02-name-check.md` 표 채우기 (작업 환경에서 조회 사이트 접속이 막혀 직접 확인 필요) |
+| 2 | 인터뷰 | 질문지·모집 키트 완료 | 9/28(월) 첫 연락. 추석 연휴 동안 폼과 연락 목록 준비 ([`recruiting.md`](docs/interviews/recruiting.md) 1절) |
 | 3 | 개발 방식 | 비교표 완료 | 인터뷰 후 결정. `04-dev-approach.md` 6절에 기록 |
 | 4 | 와이어프레임 | v0.1 완료 | 인터뷰 컨셉 반응(질문 22~26)을 반영해 v0.2 |
+
+> ⚠️ 이 저장소는 공개(public)입니다. 인터뷰 기록에는 실명·연락처·모임 이름을 넣지 않습니다. 규칙은 [`docs/interviews/README.md`](docs/interviews/README.md) 1절에 있습니다.
