@@ -1,0 +1,11 @@
+{
+  "name": "photographing-db",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-concurrency=1 --test-reporter=spec tests/*.test.mjs"
+  },
+  "devDependencies": {
+    "pg": "^8.23.0"
+  }
+}

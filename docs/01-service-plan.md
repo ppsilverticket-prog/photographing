@@ -172,3 +172,4 @@
 | 6 | 사전 신청자·창립 모임장 모집 (7절 병행 작업) | [06-prelaunch.md](06-prelaunch.md), [../landing/index.html](../landing/index.html) | 랜딩 완성, 이름·계정 확보 후 폼 연결·배포 |
 | 7 | 운영정책·약관 초안 (7절 3~5주차 선행) | [07-operations-policy.md](07-operations-policy.md) | 초안 v0.1, 8절 항목 전문가 확인 필요 |
 | 8 | iOS·Android 앱 프로토타입 | [../mobile/README.md](../mobile/README.md) | 13개 화면, 서버 연결 전. 웹 미리보기 있음 |
+| 9 | DB 구조 (Supabase) | [08-database.md](08-database.md) | 마이그레이션·권한 규칙·테스트 완료, 프로젝트 적용 전 |

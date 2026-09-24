@@ -54,7 +54,7 @@ npm run lint       # 린트
 
 | 순서 | 일 | 비고 |
 |---|---|---|
-| 1 | Supabase 프로젝트 만들기, DB 스키마·권한 규칙 | 계정 생성은 운영자가 직접. `src/data/store.tsx`의 동작을 서버 호출로 바꿈 |
+| 1 | Supabase 프로젝트 만들고 DB 적용, 앱 연결 | DB 구조는 완성 ([`../docs/08-database.md`](../docs/08-database.md)). 계정 생성은 운영자가 직접. `src/data/store.tsx`의 동작을 서버 호출로 바꾸고, 온보딩의 연령대 질문은 본인인증 결과로 대체 |
 | 2 | 카카오 로그인, Sign in with Apple | 네이티브 모듈이라 개발 빌드(EAS) 필요. Expo Go로는 못 봄 |
 | 3 | PASS 본인인증 연동 | 본인인증 대행사 계약 필요 |
 | 4 | 카카오맵 | 카카오 개발자 앱 키 필요 |
