@@ -11,6 +11,21 @@ Expo SDK 57(React Native, TypeScript)로 만든 앱 프로토타입입니다. �
 
 컴퓨터(맥·윈도우 모두 가능)와 휴대폰이 필요합니다. 맥이 없어도 아이폰에서 볼 수 있습니다.
 
+### Mac에서 한 번에 하기
+
+Mac의 **터미널** 앱에 아래 한 줄을 붙여 넣으면 이 앱 전용 Node.js 설치, 코드 받기, 접속 정보 저장, 패키지 설치, 실행까지 한 번에 합니다. 마지막 두 값은 Supabase 대시보드의 Project URL과 publishable 키로 바꿉니다. 값 없이 실행하면 처음에 물어보고, 그냥 Enter를 누르면 예시 데이터 모드로 실행합니다.
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/ppsilverticket-prog/photographing/refs/heads/claude/awesome-wright-t8ek2d/mobile/scripts/start-mac.sh) 'https://프로젝트ID.supabase.co' 'sb_publishable_...'
+```
+
+- 파일은 모두 `~/photographing-app` 안에 설치되고, 관리자 암호는 묻지 않습니다.
+- 다음부터는 바탕화면의 **포토그래핑 실행**을 더블클릭합니다. 실행할 때마다 최신 코드를 받습니다.
+- 끝내려면 터미널 창에서 Control + C를 누릅니다.
+- 스크립트 내용: [`scripts/start-mac.sh`](scripts/start-mac.sh)
+
+### 직접 설치하기
+
 1. 컴퓨터에 [Node.js](https://nodejs.org) LTS 버전을 설치합니다.
 2. 휴대폰에 **Expo Go** 앱을 설치합니다 (App Store, Google Play).
 3. 이 저장소를 내려받고 터미널에서 실행합니다.

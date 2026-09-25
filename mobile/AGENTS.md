@@ -22,6 +22,8 @@ npx expo export --platform web --output-dir dist-web   # static web build for pr
 
 In the Claude Code cloud environment, api.expo.dev is blocked by the network policy. Prefix `expo install` and `expo export` with `EXPO_OFFLINE=1` there.
 
+`scripts/start-mac.sh` is the one-line setup for non-developers on a Mac (private Node.js in `~/photographing-app/.node`, code from the branch tarball, `.env.local`, `npm install`, `expo start`). It must stay compatible with macOS's bash 3.2 and must not need git, Homebrew, or an admin password. It downloads the branch named in the script, so update `BRANCH` there and the URL in README when the app moves to `main`.
+
 `EXPO_PUBLIC_*` values are inlined at build time and Metro caches the result: after changing `.env.local` (or env vars for an export), run with `--clear`.
 
 Run lint, typecheck, and tests before declaring any task done.
