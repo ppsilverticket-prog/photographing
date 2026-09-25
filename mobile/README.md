@@ -20,7 +20,7 @@ bash <(curl -fsSL https://raw.githubusercontent.com/ppsilverticket-prog/photogra
 ```
 
 - 파일은 모두 `~/photographing-app` 안에 설치되고, 관리자 암호는 묻지 않습니다.
-- 다음부터는 바탕화면의 **포토그래핑 실행**을 더블클릭합니다. 실행할 때마다 최신 코드를 받습니다.
+- 다음부터는 바탕화면의 **포토그래핑 실행**을 더블클릭합니다. 실행할 때마다 최신 코드를 받습니다. 처음에 macOS가 터미널의 데스크탑 폴더 접근을 물으면 허용합니다 (거부해도 앱은 실행되고, 실행 파일만 만들어지지 않습니다).
 - 끝내려면 터미널 창에서 Control + C를 누릅니다.
 - 스크립트 내용: [`scripts/start-mac.sh`](scripts/start-mac.sh)
 

@@ -120,7 +120,7 @@ install_packages() {
 # 바탕화면 실행 파일. 이 컴퓨터에서 만든 파일이라 macOS가 막지 않는다
 make_launcher() {
   [ -d "$HOME/Desktop" ] || return 0
-  cat >"$LAUNCHER" <<EOF
+  cat >"$LAUNCHER" <<EOF || return 1
 #!/bin/bash
 # 포토그래핑 앱을 최신 코드로 실행한다. 끝내려면 이 창에서 Control + C.
 exec /bin/bash "$APP_DIR/mobile/scripts/start-mac.sh"
@@ -142,7 +142,9 @@ main() {
   rm -rf "$tmp"
   write_env "$@"
   install_packages
-  make_launcher
+  # macOS가 묻는 "데스크탑 폴더 접근"을 거부해도 앱은 실행한다
+  make_launcher 2>/dev/null ||
+    echo "바탕화면에 실행 파일을 만들지 못했어요. 다음에도 같은 한 줄을 붙여 넣으면 돼요."
 
   say "앱 실행"
   if [ -f "$APP_DIR/mobile/.env.local" ]; then
@@ -160,8 +162,10 @@ main() {
      Mac에서 "들어오는 연결을 허용할까요?"라고 물어도 허용해요.
 
 앱을 쓰는 동안 이 창을 닫지 마세요. 끝내려면 Control + C.
-다음부터는 바탕화면의 "포토그래핑 실행"을 더블클릭하면 돼요.
 EOF
+  if [ -f "$LAUNCHER" ]; then
+    echo '다음부터는 바탕화면의 "포토그래핑 실행"을 더블클릭하면 돼요.'
+  fi
   cd "$APP_DIR/mobile"
   # .env.local이 바뀌어도 반영되도록 캐시를 비우고 시작한다
   exec npx expo start --clear
