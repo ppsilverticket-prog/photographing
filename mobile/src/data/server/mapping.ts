@@ -1,6 +1,7 @@
 // DB 행(snake_case)과 앱의 도메인 타입(camelCase) 사이의 변환.
 // 테이블 구조는 supabase/migrations/20260924100000_schema.sql 참고.
 import type { MeetupDraft } from '../../domain/meetupRules';
+import type { ReviewRecord } from '../../domain/review';
 import type {
   ActivityType,
   AgeBand,
@@ -101,6 +102,12 @@ export interface ChatRow {
   author_id: string;
   body: string;
   created_at: string;
+}
+
+export interface ReviewRow {
+  meetup_id: string;
+  reviewee_id: string;
+  score: number;
 }
 
 export interface ReportRow {
@@ -247,6 +254,10 @@ export function toChat(row: ChatRow): ChatMessage {
   return { id: row.id, meetupId: row.meetup_id, authorId: row.author_id, body: row.body, createdAt: row.created_at };
 }
 
+export function toReview(row: ReviewRow): ReviewRecord {
+  return { meetupId: row.meetup_id, revieweeId: row.reviewee_id, score: row.score };
+}
+
 export function toReport(row: ReportRow): Report {
   const kind: ReportTargetKind = row.target_kind === 'meetup' || row.target_kind === 'member' ? row.target_kind : 'post';
   return { id: row.id, targetKind: kind, targetId: row.target_id, reason: row.reason, detail: row.detail ?? '', createdAt: row.created_at };
@@ -308,6 +319,11 @@ export function newPostToRow(p: NewPostInput, photoPath: string | null) {
   };
 }
 
+/** 매너 평가. 평가하는 사람(reviewer_id)은 DB가 로그인한 계정으로 채운다 */
+export function reviewToRow(meetupId: string, revieweeId: string, score: number) {
+  return { meetup_id: meetupId, reviewee_id: revieweeId, score };
+}
+
 export function profileToRow(p: { name: string; type: ActivityType; district: string; genres: Genre[] }) {
   return { display_name: p.name.trim(), activity_type: p.type, district: p.district, genres: p.genres };
 }
@@ -337,4 +353,6 @@ export const selects = {
   blocks: 'blocked_id',
   chats: 'id, meetup_id, author_id, body, created_at',
   reports: 'id, target_kind, target_id, reason, detail, created_at',
+  /** 내가 남긴 평가만 보인다 (RLS) */
+  reviews: 'meetup_id, reviewee_id, score',
 } as const;

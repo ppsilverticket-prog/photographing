@@ -1,6 +1,6 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLayoutEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { feeText } from '../components/cards';
 import {
@@ -19,12 +19,13 @@ import {
   Tag,
   Txt,
 } from '../components/ui';
-import { useMe, useStore } from '../data/store';
+import { useMe, useMyId, useStore } from '../data/store';
 import { formatRange, formatShortDate } from '../domain/format';
 import { activityLabel, ageLabel, difficultyLabel, kindLabel } from '../domain/labels';
 import { isEligible, seatsLeft } from '../domain/meetupRules';
 import { canRequestToJoin, classifyCancellation, participationRestriction } from '../domain/noShow';
-import type { ActivityType } from '../domain/types';
+import { mannerLabels, REVIEW_DAYS, type ReviewRecord, reviewTargets } from '../domain/review';
+import type { ActivityType, Meetup, Member } from '../domain/types';
 import type { RootScreenProps } from '../navigation/types';
 import { space, usePalette } from '../theme';
 
@@ -249,6 +250,8 @@ export default function MeetupDetailScreen({ route, navigation }: RootScreenProp
 
       {isHost && mode === 'server' ? <HostPanel meetupId={meetup.id} started={start <= now} /> : null}
 
+      <ReviewPanel meetup={meetup} />
+
       <Section title="모임 소개">
         <Txt>{meetup.description}</Txt>
       </Section>
@@ -370,5 +373,94 @@ function HostPanel({ meetupId, started }: { meetupId: string; started: boolean }
         )}
       </View>
     </Section>
+  );
+}
+
+/** 함께한 사람 매너 평가. 모임이 끝나고 7일 동안, 그 자리에 있었던 사람끼리 */
+function ReviewPanel({ meetup }: { meetup: Meetup }) {
+  const { state } = useStore();
+  const myId = useMyId();
+  const targets = reviewTargets(meetup, myId, state.participations, new Date());
+  if (targets.length === 0) return null;
+  const until = new Date(new Date(meetup.endsAt).getTime() + REVIEW_DAYS * 24 * 60 * 60 * 1000);
+
+  return (
+    <Section title="함께한 사람 평가">
+      <Txt variant="small" tone="muted">
+        {formatShortDate(until)}까지 남길 수 있어요. 누가 몇 점을 줬는지는 공개되지 않고, 모두의 평가를 합친 신뢰도로만 보여요. 한 번 남기면
+        바꿀 수 없어요.
+      </Txt>
+      <View style={{ gap: space.sm }}>
+        {targets.map((id) => {
+          const member = state.members[id];
+          if (!member) return null;
+          const done = state.reviews.find((r) => r.meetupId === meetup.id && r.revieweeId === id);
+          return <ReviewRow key={id} meetupId={meetup.id} member={member} isHost={id === meetup.hostId} done={done} />;
+        })}
+      </View>
+    </Section>
+  );
+}
+
+function ReviewRow({ meetupId, member, isHost, done }: { meetupId: string; member: Member; isHost: boolean; done?: ReviewRecord }) {
+  const { actions } = useStore();
+  const c = usePalette();
+  const [score, setScore] = useState<number | null>(null);
+  const [sending, setSending] = useState(false);
+
+  const header = (
+    <Row style={{ flexShrink: 1 }}>
+      <Avatar name={member.name} size={32} />
+      <Txt variant="bodyStrong">{member.name}</Txt>
+      {isHost ? <Tag label="모임장" tone="neutral" /> : null}
+    </Row>
+  );
+
+  if (done) {
+    return (
+      <Row style={{ justifyContent: 'space-between' }}>
+        {header}
+        <Tag label={`남김 · ${mannerLabels[done.score]}`} />
+      </Row>
+    );
+  }
+
+  const shown = score ?? 0;
+  return (
+    <Card style={{ paddingVertical: space.md, gap: space.sm }}>
+      {header}
+      <Row style={{ justifyContent: 'space-between' }}>
+        <View style={{ flexDirection: 'row', gap: 2 }} accessibilityRole="radiogroup">
+          {[1, 2, 3, 4, 5].map((n) => (
+            <Pressable
+              key={n}
+              accessibilityRole="radio"
+              accessibilityLabel={`${n}점, ${mannerLabels[n]}`}
+              accessibilityState={{ checked: score === n }}
+              onPress={() => setScore(n)}
+              hitSlop={4}
+              style={{ padding: 4 }}
+            >
+              <Ionicons name={n <= shown ? 'star' : 'star-outline'} size={26} color={n <= shown ? c.accent : c.faint} />
+            </Pressable>
+          ))}
+        </View>
+        <Button
+          label="남기기"
+          disabled={score === null}
+          loading={sending}
+          onPress={async () => {
+            if (score === null) return;
+            setSending(true);
+            await actions.review(meetupId, member.id, score);
+            setSending(false);
+          }}
+          style={{ minHeight: 38, paddingHorizontal: 16 }}
+        />
+      </Row>
+      <Txt variant="caption" tone="muted">
+        {score ? mannerLabels[score] : '별을 눌러 골라 주세요'}
+      </Txt>
+    </Card>
   );
 }

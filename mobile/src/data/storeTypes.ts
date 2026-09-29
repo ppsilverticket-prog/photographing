@@ -1,6 +1,7 @@
 // 예시 데이터 모드(local)와 서버 모드(server)가 함께 쓰는 상태와 동작의 모양.
 // 화면은 이 모양만 알고, 어느 모드인지는 거의 신경 쓰지 않는다.
 import type { MeetupDraft } from '../domain/meetupRules';
+import type { ReviewRecord } from '../domain/review';
 import type {
   ActivityType,
   AgeBand,
@@ -38,8 +39,10 @@ export interface AppState {
   reports: Report[];
   chats: ChatMessage[];
   liked: string[];
-  /** 서버 모드: 내가 볼 수 있는 참여 기록 (모임장 화면의 승인·출석에 쓴다) */
+  /** 내가 볼 수 있는 참여 기록. 모임장 화면의 승인·출석과 매너 평가 자격에 쓴다 */
   participations: Participation[];
+  /** 내가 남긴 매너 평가 */
+  reviews: ReviewRecord[];
   /** 서버 모드: 로그인한 계정. 로그인했지만 프로필이 없으면 me는 null이다 */
   authUserId: string | null;
   /** 서버 모드: 처음 불러오는 중 */
@@ -88,6 +91,8 @@ export interface StoreActions {
   decide(meetupId: string, userId: string, approve: boolean): void;
   /** 모임장: 출석 체크 */
   markAttendance(meetupId: string, userId: string, attended: boolean): void;
+  /** 함께한 사람에게 매너 평가 남기기 (1~5점, 한 번만) */
+  review(meetupId: string, revieweeId: string, score: number): Promise<boolean>;
   /** 모임 채팅을 실시간으로 받는다. 돌려준 함수를 부르면 멈춘다 */
   subscribeChat(meetupId: string): () => void;
   refresh(): Promise<void>;
@@ -96,8 +101,10 @@ export interface StoreActions {
   signOut(): void;
   // 예시 데이터 모드 전용 (시연 도구)
   approvePending(meetupId: string): void;
-  proto(change: 'foundingHost' | 'addNoShow' | 'clearNoShows'): void;
+  proto(change: ProtoChange): void;
 }
+
+export type ProtoChange = 'foundingHost' | 'addNoShow' | 'clearNoShows' | 'attendPast';
 
 export interface Store {
   mode: 'local' | 'server';
@@ -117,6 +124,7 @@ export function emptyState(): AppState {
     chats: [],
     liked: [],
     participations: [],
+    reviews: [],
     authUserId: null,
     loading: false,
   };

@@ -157,7 +157,35 @@ export function PostCard({
   );
 }
 
+/** 평가를 기다리는 모임이 있으면 알려 준다 (홈·MY) */
+export function ReviewPrompt({ meetups, onPress }: { meetups: Meetup[]; onPress: (meetupId: string) => void }) {
+  const c = usePalette();
+  if (meetups.length === 0) return null;
+  const first = meetups[0];
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityHint="모임 화면에서 함께한 사람을 평가해요"
+      onPress={() => onPress(first.id)}
+      style={({ pressed }) => [styles.prompt, { backgroundColor: c.accentSoft, opacity: pressed ? 0.85 : 1 }]}
+    >
+      <Ionicons name="star-outline" size={20} color={c.accentInk} />
+      <View style={{ flex: 1 }}>
+        <Txt variant="bodyStrong" tone="accent">
+          함께한 사람을 평가해 주세요
+        </Txt>
+        <Txt variant="caption" tone="accent" numberOfLines={1}>
+          {first.title}
+          {meetups.length > 1 ? ` 외 ${meetups.length - 1}개` : ''} · 끝나고 7일까지
+        </Txt>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={c.accentInk} />
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
+  prompt: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md, borderRadius: radius.md },
   card: {
     borderWidth: 1,
     borderRadius: radius.lg,

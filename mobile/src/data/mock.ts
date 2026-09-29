@@ -1,6 +1,6 @@
 // 프로토타입용 예시 데이터. 실제 서버(Supabase)를 연결하면 이 파일은 개발용 시드로만 쓴다.
 // 모임 날짜는 앱을 연 날을 기준으로 만들어서 언제 열어도 "다가오는 모임"으로 보인다.
-import type { AgeBand, ChatMessage, Meetup, Member, Post } from '../domain/types';
+import type { AgeBand, ChatMessage, Meetup, Member, Participation, Post } from '../domain/types';
 
 function dayAt(base: Date, addDays: number, hour: number, minute = 0): Date {
   return new Date(base.getFullYear(), base.getMonth(), base.getDate() + addDays, hour, minute);
@@ -121,6 +121,9 @@ export const seedMembers: Member[] = [
   },
 ];
 
+/** 이틀 전에 끝난 예시 모임 (매너 평가 시연용) */
+export const PAST_MEETUP_ID = 'm-ikseon';
+
 export function seedMeetups(now: Date): Meetup[] {
   return [
     {
@@ -237,7 +240,37 @@ export function seedMeetups(now: Date): Meetup[] {
       description:
         '퇴근길에 노을 스냅 한 시간. 역광에서 사람을 찍는 법, 하늘 색을 살리는 노출을 같이 연습해요. 매주 수요일 정기 크루예요.',
     },
+    // 이틀 전에 끝난 모임. 설정의 "지난 모임에 참석한 것으로 보기"로 매너 평가를 시연한다
+    {
+      id: PAST_MEETUP_ID,
+      kind: 'flash',
+      title: '익선동 한옥 골목 스냅',
+      genres: ['snap', 'street'],
+      startsAt: dayAt(now, -2, 14, 0).toISOString(),
+      endsAt: dayAt(now, -2, 16, 30).toISOString(),
+      place: { name: '종로3가역 4번 출구', district: '종로구' },
+      capacity: 8,
+      difficulty: 'welcome',
+      fee: { type: 'free' },
+      targetTypes: [],
+      targetAges: [],
+      approval: false,
+      hostId: 'daeun',
+      participantIds: ['daeun', 'sora', 'jihoon'],
+      description: '한옥 지붕선과 골목 빛을 따라 걸으며 스냅을 찍었어요.',
+    },
   ];
+}
+
+/** 지난 모임의 출석 기록 (모임장이 체크한 것) */
+export function seedParticipations(): Participation[] {
+  return ['sora', 'jihoon'].map((userId) => ({
+    meetupId: PAST_MEETUP_ID,
+    userId,
+    role: 'member' as const,
+    status: 'confirmed' as const,
+    attendance: 'attended' as const,
+  }));
 }
 
 export function seedPosts(now: Date): Post[] {

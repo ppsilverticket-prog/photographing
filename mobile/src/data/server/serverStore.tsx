@@ -17,6 +17,8 @@ import {
   type ProfileRow,
   profileToRow,
   type ReportRow,
+  type ReviewRow,
+  reviewToRow,
   rpc,
   selects,
   toChat,
@@ -25,6 +27,7 @@ import {
   toParticipation,
   toPost,
   toReport,
+  toReview,
 } from './mapping';
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -43,7 +46,7 @@ function unwrap<T>(res: Result<T>): T {
 async function fetchAll(client: SupabaseClient, uid: string): Promise<AppState> {
   // 끝난 지 7일이 안 된 모임까지 불러온다 (출석 체크·매너 평가 기간)
   const since = new Date(Date.now() - 7 * DAY).toISOString();
-  const [profiles, meetups, parts, noShows, posts, likes, blocks, chats, reports] = await Promise.all([
+  const [profiles, meetups, parts, noShows, posts, likes, blocks, chats, reports, reviews] = await Promise.all([
     client.from('profiles').select(selects.profiles),
     client.from('meetups').select(selects.meetups).eq('status', 'open').gte('ends_at', since).order('starts_at'),
     client.from('meetup_participants').select(selects.participants),
@@ -53,6 +56,7 @@ async function fetchAll(client: SupabaseClient, uid: string): Promise<AppState> 
     client.from('blocks').select(selects.blocks),
     client.from('chat_messages').select(selects.chats).order('created_at').limit(500),
     client.from('reports').select(selects.reports).order('created_at', { ascending: false }),
+    client.from('meetup_reviews').select(selects.reviews),
   ]);
 
   const profileRows = unwrap(profiles) as unknown as ProfileRow[];
@@ -91,6 +95,7 @@ async function fetchAll(client: SupabaseClient, uid: string): Promise<AppState> 
     chats: (unwrap(chats) as unknown as ChatRow[]).map(toChat),
     liked: (unwrap(likes) as unknown as { post_id: string }[]).map((l) => l.post_id),
     participations: partRows.map(toParticipation),
+    reviews: (unwrap(reviews) as unknown as ReviewRow[]).map(toReview),
     authUserId: uid,
     loading: false,
   };
@@ -322,6 +327,12 @@ export function ServerStoreProvider({
         const [name, args] = rpc.attendance(meetupId, userId, attended);
         void run(() => call(name, args), () => (attended ? '참석으로 체크했어요.' : '노쇼로 체크했어요.'));
       },
+
+      review: async (meetupId, revieweeId, score) =>
+        (await run(async () => {
+          unwrap(await client.from('meetup_reviews').insert(reviewToRow(meetupId, revieweeId, score)));
+          return true;
+        }, () => '평가를 남겼어요.')) ?? false,
 
       refresh: load,
 

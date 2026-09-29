@@ -3,12 +3,13 @@ import type { CompositeScreenProps } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { View } from 'react-native';
 
-import { MeetupCard, PostCard } from '../components/cards';
+import { MeetupCard, PostCard, ReviewPrompt } from '../components/cards';
 import { Banner, Card, Row, Screen, Section, Tag, Txt } from '../components/ui';
 import { guidesByAge } from '../data/mock';
 import { useMe, useStore, useVisible } from '../data/store';
 import { activityLabel, ageLabel } from '../domain/labels';
 import { isEligible, seatsLeft } from '../domain/meetupRules';
+import { meetupsAwaitingReview } from '../domain/review';
 import type { Meetup } from '../domain/types';
 import type { RootStackParamList, TabParamList } from '../navigation/types';
 import { space } from '../theme';
@@ -36,6 +37,8 @@ export default function HomeScreen({ navigation }: Props) {
     .filter((p) => p.board === 'feedback' && p.answers.length === 0 && p.authorId !== me.id)
     .slice(0, 2);
 
+  const toReview = meetupsAwaitingReview(state.meetups, me.id, state.participations, state.reviews, now);
+
   const statusOf = (id: string) =>
     state.meetups.find((m) => m.id === id)?.participantIds.includes(me.id)
       ? ('joined' as const)
@@ -50,6 +53,7 @@ export default function HomeScreen({ navigation }: Props) {
           본인인증 전이에요. 인증을 마치면 모임에 참여하고, 모임을 열고, 글을 쓸 수 있어요.
         </Banner>
       ) : null}
+      <ReviewPrompt meetups={toReview} onPress={(id) => navigation.navigate('MeetupDetail', { id })} />
       <Card style={{ paddingVertical: space.md }}>
         <Row style={{ justifyContent: 'space-between' }}>
           <View style={{ flex: 1 }}>

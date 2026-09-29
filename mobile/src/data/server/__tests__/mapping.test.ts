@@ -11,6 +11,7 @@ import {
   meetupDraftToRow,
   newPostToRow,
   profileToRow,
+  reviewToRow,
   rpc,
   selects,
   toMeetup,
@@ -81,6 +82,7 @@ describe('앱과 DB의 계약', () => {
     expect(grantedColumns('insert', 'posts')).toEqual(expect.arrayContaining(Object.keys(post)));
     const profile = profileToRow({ name: '테스트', type: 'amateur', district: '성동구', genres: [] });
     expect(grantedColumns('insert', 'profiles')).toEqual(expect.arrayContaining(Object.keys(profile)));
+    expect(grantedColumns('insert', 'meetup_reviews')).toEqual(expect.arrayContaining(Object.keys(reviewToRow('m', 'u', 5))));
     for (const [table, cols] of [
       ['post_answers', ['post_id', 'body']],
       ['post_likes', ['post_id']],
@@ -117,6 +119,7 @@ describe('앱과 DB의 계약', () => {
       blocks: 'blocks',
       chats: 'chat_messages',
       reports: 'reports',
+      reviews: 'meetup_reviews',
     };
     const relTable: Record<string, string> = { profile_stats: 'profile_stats', meetups: 'meetups', post_answers: 'post_answers' };
     for (const [key, s] of Object.entries(selects)) {

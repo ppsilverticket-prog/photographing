@@ -4,9 +4,10 @@ import { createContext, type ReactNode, useContext, useMemo, useReducer } from '
 
 import { buildMeetup, type MeetupDraft } from '../domain/meetupRules';
 import { classifyCancellation } from '../domain/noShow';
+import { addMannerScore } from '../domain/review';
 import type { Answer, ChatMessage, Meetup, Member, Post, Report } from '../domain/types';
 import { supabase } from '../lib/supabase';
-import { seedChats, seedMeetups, seedMembers, seedPosts } from './mock';
+import { PAST_MEETUP_ID, seedChats, seedMeetups, seedMembers, seedParticipations, seedPosts } from './mock';
 import { ServerStoreProvider } from './server/serverStore';
 import {
   type AppState,
@@ -14,6 +15,7 @@ import {
   type NewPost,
   type OnboardingProfile,
   type ProfileChange,
+  type ProtoChange,
   type Store,
 } from './storeTypes';
 
@@ -36,8 +38,9 @@ type Action =
   | { type: 'answer'; postId: string; answer: Answer }
   | { type: 'toggleLike'; postId: string }
   | { type: 'chat'; message: ChatMessage }
+  | { type: 'review'; meetupId: string; revieweeId: string; score: number }
   | { type: 'deleteAccount' }
-  | { type: 'proto'; change: 'foundingHost' | 'addNoShow' | 'clearNoShows' };
+  | { type: 'proto'; change: ProtoChange };
 
 export function initialState(now = new Date()): AppState {
   return {
@@ -46,6 +49,7 @@ export function initialState(now = new Date()): AppState {
     meetups: seedMeetups(now),
     posts: seedPosts(now),
     chats: seedChats(now),
+    participations: seedParticipations(),
   };
 }
 
@@ -141,6 +145,16 @@ export function reducer(state: AppState, action: Action): AppState {
     }
     case 'chat':
       return { ...state, chats: [...state.chats, action.message] };
+    case 'review': {
+      const { meetupId, revieweeId, score } = action;
+      if (state.reviews.some((r) => r.meetupId === meetupId && r.revieweeId === revieweeId)) return state;
+      const reviewee = state.members[revieweeId];
+      return {
+        ...state,
+        reviews: [...state.reviews, { meetupId, revieweeId, score }],
+        members: reviewee ? { ...state.members, [revieweeId]: { ...reviewee, stats: addMannerScore(reviewee.stats, score) } } : state.members,
+      };
+    }
     case 'deleteAccount':
       return initialState();
     case 'proto': {
@@ -149,6 +163,18 @@ export function reducer(state: AppState, action: Action): AppState {
       if (action.change === 'foundingHost') return withMe(state, { ...me, foundingHost: !me.foundingHost });
       if (action.change === 'clearNoShows') {
         return withMe(state, { ...me, noShowDates: [], stats: { ...me.stats, noShows: 0 } });
+      }
+      if (action.change === 'attendPast') {
+        if (state.participations.some((p) => p.meetupId === PAST_MEETUP_ID && p.userId === ME)) return state;
+        const next: AppState = {
+          ...state,
+          meetups: state.meetups.map((m) => (m.id === PAST_MEETUP_ID ? { ...m, participantIds: [...m.participantIds, ME] } : m)),
+          participations: [
+            ...state.participations,
+            { meetupId: PAST_MEETUP_ID, userId: ME, role: 'member', status: 'confirmed', attendance: 'attended' },
+          ],
+        };
+        return withMe(next, { ...me, stats: { ...me.stats, attended: me.stats.attended + 1 } });
       }
       const at = new Date().toISOString();
       return withMe(state, {
@@ -223,6 +249,10 @@ function useLocalStore(): Store {
           type: 'chat',
           message: { id: newId('c'), meetupId, authorId: ME, body, createdAt: new Date().toISOString() },
         }),
+      review: async (meetupId, revieweeId, score) => {
+        dispatch({ type: 'review', meetupId, revieweeId, score });
+        return true;
+      },
       deleteAccount: () => dispatch({ type: 'deleteAccount' }),
       proto: (change) => dispatch({ type: 'proto', change }),
       // 아래는 서버 모드에서만 의미가 있다

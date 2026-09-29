@@ -4,12 +4,13 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useLayoutEffect, useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { MeetupCard, PostCard } from '../components/cards';
+import { MeetupCard, PostCard, ReviewPrompt } from '../components/cards';
 import { Avatar, Banner, Card, Divider, EmptyState, IconButton, Row, Screen, StatBox, Tag, Txt } from '../components/ui';
 import { useMe, useStore } from '../data/store';
 import { formatShortDate } from '../domain/format';
 import { activityLabel, ageLabel } from '../domain/labels';
 import { participationRestriction } from '../domain/noShow';
+import { meetupsAwaitingReview } from '../domain/review';
 import type { RootStackParamList, TabParamList } from '../navigation/types';
 import { space, usePalette } from '../theme';
 
@@ -33,6 +34,7 @@ export default function MyScreen({ navigation }: Props) {
     .filter((m) => m.participantIds.includes(me.id) || state.pending.includes(m.id))
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt));
   const myPosts = state.posts.filter((p) => p.authorId === me.id);
+  const toReview = meetupsAwaitingReview(state.meetups, me.id, state.participations, state.reviews, now);
 
   return (
     <Screen onRefresh={mode === 'server' ? actions.refresh : undefined}>
@@ -74,6 +76,8 @@ export default function MyScreen({ navigation }: Props) {
           모임이 끝나면 서로 매너를 평가해요. 노쇼와 늦은 취소는 다른 사람에게도 보여요.
         </Txt>
       </Card>
+
+      <ReviewPrompt meetups={toReview} onPress={(id) => navigation.navigate('MeetupDetail', { id })} />
 
       {restriction.kind === 'blocked' ? (
         <Banner tone="danger" icon="ban-outline">

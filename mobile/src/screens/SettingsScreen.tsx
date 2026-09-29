@@ -123,6 +123,11 @@ export default function SettingsScreen({ navigation }: RootScreenProps<'Settings
             variant="secondary"
             onPress={() => actions.proto('foundingHost')}
           />
+          <Button
+            label="지난 모임에 참석한 것으로 보기 (매너 평가 체험)"
+            variant="secondary"
+            onPress={() => actions.proto('attendPast')}
+          />
           <Row>
             <Button label="노쇼 1회 추가" variant="secondary" onPress={() => actions.proto('addNoShow')} style={{ flex: 1 }} />
             <Button label="노쇼 기록 지우기" variant="secondary" onPress={() => actions.proto('clearNoShows')} style={{ flex: 1 }} />
